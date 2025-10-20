@@ -1,11 +1,11 @@
-# 🧩 AI Persona System
+# AI Persona System
 
 > **Author:** Marco Siccardi (MSiccDev Software Development)  
 > **Purpose:** A structured framework for maintaining consistent AI collaboration across different LLM providers, projects, and development phases.
 
 ---
 
-## 🧭 Overview
+## Overview
 
 This repository provides a **comprehensive AI persona and context management system** designed to enable consistent, context-aware AI collaboration across multiple projects and platforms.
 
@@ -19,7 +19,7 @@ All components are designed to work seamlessly across different LLM environments
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 persona/
@@ -33,13 +33,13 @@ persona/
 │   └── context_aware_ai_session_spec_v1.md  # Specification for AI session management
 │
 └── templates/
-    ├── persona_template.md            # Template for creating personal personas
-    └── project_prompt_template.md     # Template for project-specific contexts
+   ├── persona_template.md            # Template for creating personal personas
+   └── project_prompt_template.md     # Template for project-specific contexts
 ```
 
 ---
 
-## 🎯 Core Concepts
+## Core Concepts
 
 ### 1. **Personal Persona**
 Your foundational AI context that includes:
@@ -73,7 +73,7 @@ A structured approach to AI collaboration that manages:
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### For First-Time Users
 
@@ -98,7 +98,7 @@ A structured approach to AI collaboration that manages:
 
 ---
 
-## 🧩 Loading Context in Different AI Platforms
+## Loading Context in Different AI Platforms
 
 | Platform | Method |
 |----------|---------|
@@ -112,7 +112,7 @@ A structured approach to AI collaboration that manages:
 
 ---
 
-## 📋 Key Principles
+## Key Principles
 
 ### Session State Management
 
@@ -138,15 +138,15 @@ You can modify session state using:
 
 ### Core Principles
 
-- ✅ **Determinism:** Same context + same query = consistent responses
-- ✅ **Explicitness:** AI confirms context changes rather than assuming
-- ✅ **Continuity:** Session state persists across conversation turns
-- ✅ **Reversibility:** All context changes can be undone
-- ✅ **Transparency:** Current context is always visible on request
+- **Determinism:** Same context + same query = consistent responses
+- **Explicitness:** AI confirms context changes rather than assuming
+- **Continuity:** Session state persists across conversation turns
+- **Reversibility:** All context changes can be undone
+- **Transparency:** Current context is always visible on request
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 ### For Users
 - `templates/persona_template.md` - Template for creating your personal AI persona with detailed instructions
@@ -162,7 +162,7 @@ You can modify session state using:
 
 ---
 
-## 🔧 Customization
+## Customization
 
 ### Creating Your Persona
 
@@ -188,7 +188,7 @@ Each project context should define:
 
 ---
 
-## ⚙️ Conventions
+## Conventions
 
 - **File format:** UTF-8 Markdown
 - **Naming:** lowercase with underscores (`project_name_prompt.md`)
@@ -198,7 +198,7 @@ Each project context should define:
 
 ---
 
-## 🌟 Benefits
+## Benefits
 
 ### Consistency
 - Same quality of AI assistance across different platforms
@@ -221,7 +221,7 @@ Each project context should define:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 This is a personal repository, but the **templates** and **specifications** are designed to be:
 - Reusable by others
@@ -232,7 +232,7 @@ Feel free to fork and adapt the structure for your own needs.
 
 ---
 
-## 📄 License
+## License
 
 The specification documents and templates are provided for open use and adaptation.  
 Personal persona files remain private and should not be shared without redaction of sensitive information.
@@ -240,3 +240,4 @@ Personal persona files remain private and should not be shared without redaction
 ---
 
 © 2025 Marco Siccardi – MSiccDev Software Development
+
