@@ -27,14 +27,14 @@ persona/
 ├── README.md                          # This file
 │
 ├── projects/
-│   └── project1_prompt.md             # Example project-specific context
+│   └── project1_prompt.prompt.md             # Example project-specific context
 │
 ├── specs/
 │   └── context_aware_ai_session_spec.md  # Specification for AI session management
 │
 └── templates/
-   ├── persona_template.md            # Template for creating personal personas
-   └── project_prompt_template.md     # Template for project-specific contexts
+   ├── persona_template.instructions.md     # Template for creating personal personas
+   └── project_prompt_template.prompt.md    # Template for project-specific contexts
 ```
 
 ---
@@ -47,7 +47,7 @@ Your foundational AI context that includes:
 - Technical skills and expertise areas
 - Active projects and goals
 - Preferred working style and communication preferences
-- Constraints and learning journey
+- Constraints and limitations
 
 **Purpose:** Serves as the base layer that AI assistants load first to understand who you are and how you work.
 
@@ -78,14 +78,14 @@ A structured approach to AI collaboration that manages:
 ### For First-Time Users
 
 1. **Create Your Persona:**
-   - Copy `templates/persona_template.md`
+   - Copy `templates/persona_template.instructions.md`
    - Fill in your professional details, skills, projects, and preferences
-   - Save as `yourname_persona.md` in the root folder
+   - Save as `yourname_persona.instructions.md` in the root folder
 
 2. **Create Project Contexts:**
-   - Copy `templates/project_prompt_template.md` for each active project
+   - Copy `templates/project_prompt_template.prompt.md` for each active project
    - Define default roles, phases, and project-specific guidelines
-   - Save in `projects/` folder with descriptive names
+   - Save in `projects/` folder with descriptive names (e.g., `project_name.prompt.md`)
 
 3. **Load Into Your AI Environment:**
    - See platform-specific instructions below
@@ -103,12 +103,12 @@ A structured approach to AI collaboration that manages:
 | Platform | Method |
 |----------|---------|
 | **Anthropic Claude Projects** | Paste persona + project context into the *Project Knowledge* or *Custom Instructions* field |
-| **GitHub Copilot Edits** | Reference persona file in workspace; Copilot reads it automatically |
-| **LM Studio / Ollama** | Save `.md` files as system prompts or context presets |
+| **GitHub Copilot Edits** | Place `.instructions.md` files in workspace; Copilot automatically discovers and loads them |
+| **LM Studio / Ollama** | Save `.instructions.md` files as system prompts or context presets |
 | **OpenAI ChatGPT** | Paste into *Custom Instructions* or upload as a file |
 | **Gemini** | Paste into chat or use as system instruction |
 | **Local scripts / APIs** | Concatenate persona + project prompt when initializing conversations |
-| **IDE integrations** | Reference files in config or load via custom extensions |
+| **IDE integrations** | Reference `.instructions.md` files in config or load via custom extensions |
 
 ---
 
@@ -149,11 +149,11 @@ You can modify session state using:
 ## Documentation
 
 ### For Users
-- `templates/persona_template.md` - Template for creating your personal AI persona with detailed instructions
-- `templates/project_prompt_template.md` - Template for creating project-specific contexts
+- `templates/persona_template.instructions.md` - Template for creating your personal AI persona with detailed instructions
+- `templates/project_prompt_template.prompt.md` - Template for creating project-specific contexts
 
 ### For Developers & AI Engineers
-- `specs/context_aware_ai_session_spec_v1.md` - Complete specification for implementing context-aware AI sessions
+- `specs/context_aware_ai_session_spec.md` - Complete specification for implementing context-aware AI sessions
   - Session state model
   - Context initialization flows
   - State transition rules
@@ -191,10 +191,13 @@ Each project context should define:
 ## Conventions
 
 - **File format:** UTF-8 Markdown
-- **Naming:** lowercase with underscores (`project_name_prompt.md`)
+  - `.instructions.md` for persona files (who you are, how to work with you)
+  - `.prompt.md` for project context files (project-specific prompts and settings)
+- **Naming:** lowercase with underscores (e.g., `yourname_persona.instructions.md`, `project_name.prompt.md`)
 - **Structure:** Consistent headings and sections across all files
 - **Languages:** Technical content in English; adapt as needed
 - **Versioning:** Update persona when skills/preferences evolve; update project contexts when phases change
+- **Discoverability:** Semantic file extensions help AI tools identify and load the appropriate context automatically
 
 ---
 
