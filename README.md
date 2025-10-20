@@ -223,21 +223,35 @@ Each project context should define:
 
 ## Contributing
 
-This is a personal repository, but the **templates** and **specifications** are designed to be:
-- Reusable by others
-- Adaptable to different workflows
-- Extensible for team or organizational use
+This is a template repository designed to be:
+- Forked or cloned for your own AI persona system
+- Customized with your personal and project details
+- Extended with additional templates and specifications
+- Adapted for team or organizational workflows
 
-Feel free to fork and adapt the structure for your own needs.
+To get started:
+1. Fork this repository - make it private (recommended for personal data!)
+2. Replace the example content with your own details
+3. Add your projects and customize templates as needed
+4. Consider contributing improvements back to the template
 
 ---
 
 ## License
 
-The specification documents and templates are provided for open use and adaptation.  
-Personal persona files remain private and should not be shared without redaction of sensitive information.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Note:** While the templates and specifications are open source, your personal persona files should remain private and not be shared without redacting sensitive information.
 
 ---
 
-© 2025 Marco Siccardi – MSiccDev Software Development
+## Author
+
+**Marco Siccardi** – MSiccDev Software Development
+
+---
+
+## Acknowledgments
+
+This system was designed to solve the challenge of maintaining consistent AI collaboration across multiple platforms and projects. It represents lessons learned from extensive work with various LLM providers and real-world development workflows.
 
