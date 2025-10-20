@@ -30,7 +30,7 @@ persona/
 │   └── project1_prompt.md             # Example project-specific context
 │
 ├── specs/
-│   └── context_aware_ai_session_spec_v1.md  # Specification for AI session management
+│   └── context_aware_ai_session_spec.md  # Specification for AI session management
 │
 └── templates/
    ├── persona_template.md            # Template for creating personal personas
