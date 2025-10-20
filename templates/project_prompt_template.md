@@ -1,3 +1,10 @@
+---
+version: 1.0.0
+last_updated: YYYY-MM-DD
+project_name: <project_name>
+spec_version: 1.0
+---
+
 # Project Context – <Project Name>
 
 > **Purpose:** Define the AI assistant's role and working context for this project.  

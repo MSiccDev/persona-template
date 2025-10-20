@@ -1,7 +1,18 @@
+---
+version: 1.1.0
+context_type: specification
+document_type: technical_specification
+created: 2025-10-20
+last_updated: 2025-10-20
+status: active
+intended_audience: AI-assisted developers, system designers, prompt engineers, LLM-based tooling architects
+license: Open for adaptation and refinement
+---
+
 # Context-Aware AI Session Flow Specification (v1)
 
 ## Specification Metadata
-- **Version:** 1.0 (Initial Draft for Review)
+- **Version:** 1.1.0 (Added documentation formatting guidelines)
 - **Created:** October 2025
 - **Intended Audience:** AI-assisted developers, system designers, prompt engineers, LLM-based tooling architects
 - **Applicability:** Contextual AI assistants used in multi-step, developer-focused or project-based workflows
@@ -630,6 +641,69 @@ The project is now in pre-release review. Switch defaults to Reviewer Mode in Re
 ### 8.7 Summary
 
 Project defaults streamline initialization and reinforce workflow consistency while preserving flexibility. They form a foundation that the user can refine based on task demands, project lifecycle, or evolving preferences.
+
+---
+
+## 8.8 Documentation Formatting Guidelines
+
+To maintain professional clarity and reduce visual noise in context files (persona, project prompts, specification documents), the following formatting guidelines are recommended:
+
+### 8.8.1 No Decorative Icons or Emojis
+
+**Guideline:** Context files should not include decorative icons, emojis, or non-textual visual markers in section headers or throughout documentation.
+
+**Rationale:**
+- **Professional appearance** – Technical documentation benefits from clean, distraction-free formatting
+- **Parsing consistency** – Emojis can interfere with automated parsing, grep searches, and version control diffs
+- **Accessibility** – Screen readers may handle emojis inconsistently or announce them unnecessarily
+- **Cross-platform compatibility** – Emoji rendering varies across systems and fonts
+- **Focus on content** – Visual decorations shift attention away from semantic meaning
+
+**Correct Examples:**
+```markdown
+## Session Prerequisites
+## State Management & Control
+### Context Visibility
+```
+
+**Incorrect Examples:**
+```markdown
+## 📋 Session Prerequisites
+## 🔄 State Management & Control
+### 📍 Context Visibility
+```
+
+### 8.8.2 Consistent Markdown Structure
+
+- Use standard Markdown headers (`##`, `###`) without decoration
+- Use clear, descriptive section names without symbolic prefixes
+- Maintain consistent indentation and spacing
+- Use code blocks (` ``` `) for technical examples
+- Use tables for structured data presentation
+- Use bullet points and numbered lists for clarity
+
+### 8.8.3 YAML Frontmatter for Metadata
+
+All context files should begin with YAML frontmatter containing:
+- `version` – Semantic version number
+- `context_type` – Type of file (specification, project, persona, etc.)
+- `created` and `last_updated` – ISO date format (YYYY-MM-DD)
+- `status` – Current status (active, draft, deprecated)
+- Additional relevant metadata (persona_file, spec_version, etc.)
+
+**Example:**
+```yaml
+---
+version: 1.0.0
+spec_version: 1.0
+context_type: project
+project_name: ExampleProject
+created: 2025-10-20
+last_updated: 2025-10-20
+status: active
+persona_file: ../persona.md
+---
+```
 
 ---
 

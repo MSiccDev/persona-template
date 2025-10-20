@@ -1,3 +1,10 @@
+---
+version: 1.0.0
+last_updated: YYYY-MM-DD
+persona_type: user_context
+scope: cross_provider
+---
+
 # User Context – [Your Name] ([Your Role/Title])
 
 > **Purpose:** This file defines the complete AI persona and context for working with **[Your Name]** across different LLM providers.  
