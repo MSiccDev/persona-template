@@ -148,17 +148,9 @@ You can modify session state using:
 
 ## Documentation
 
-### For Users
-- `templates/persona_template.instructions.md` - Template for creating your personal AI persona with detailed instructions
-- `templates/project_prompt_template.prompt.md` - Template for creating project-specific contexts
-
-### For Developers & AI Engineers
-- `specs/context_aware_ai_session_spec.md` - Complete specification for implementing context-aware AI sessions
-  - Session state model
-  - Context initialization flows
-  - State transition rules
-  - Command interface definitions
-  - Example scenarios
+- **`templates/persona_template.instructions.md`** - Template for creating your personal AI persona with detailed instructions
+- **`templates/project_prompt_template.prompt.md`** - Template for creating project-specific contexts
+- **`specs/context_aware_ai_session_spec.md`** - Complete specification for implementing context-aware AI sessions, including session state model, context initialization flows, state transition rules, command interface definitions, and example scenarios
 
 ---
 
