@@ -1,14 +1,12 @@
 ---
-version: 1.0.0
-last_updated: YYYY-MM-DD
-project_name: <project_name>
-spec_version: 1.0
+description: Project-specific instructions for <Project Name> (v1.0.0, updated YYYY-MM-DD)
+applyTo: "**/*"
 ---
 
-# Project Context – <Project Name>
+# Project Instructions – <Project Name>
 
 > **Purpose:** Define the AI assistant's role and working context for this project.  
-> Use this file together with your global persona (`yourname_persona.md`).
+> Use this file together with your global persona instructions (`yourname_persona.instructions.md`).
 
 ---
 
@@ -103,7 +101,9 @@ When assisting with **<Project Name>**:
 
 ---
 
-### Example Prompts
+### Example Usage
+
+Once these instructions are loaded, you can interact with the AI using natural requests:
 
 - "Use **<Mode 1>** and outline <topic>."  
 - "Switch to **<Mode 2>** and implement <component>."  
@@ -115,12 +115,12 @@ When assisting with **<Project Name>**:
 ## How to Use This Template
 
 1. Copy this template to the `projects/` directory
-2. Rename it to `[your_project_name]_prompt.md`
+2. Rename it to `[your_project_name]_project.instructions.md`
 3. Fill in all the bracketed and placeholder sections with your project-specific information
 4. Define at least 2-3 roles that make sense for your project
-5. Update the template as your project evolves and phases change
-6. Load this file together with your global persona file for complete AI context
+5. Update the instructions as your project evolves and phases change
+6. Load this file together with your global persona instructions for complete AI context
 
 ---
 
-© 2025 – Project Prompt Template
+© 2025 – Project Instructions Template

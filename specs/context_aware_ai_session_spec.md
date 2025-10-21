@@ -1,19 +1,20 @@
 ---
-version: 1.1.0
+version: 1.2.0
 context_type: specification
 document_type: technical_specification
 created: 2025-10-20
-last_updated: 2025-10-20
+last_updated: 2025-10-21
 status: active
 intended_audience: AI-assisted developers, system designers, prompt engineers, LLM-based tooling architects
 license: Open for adaptation and refinement
 ---
 
-# Context-Aware AI Session Flow Specification (v1)
+# Context-Aware AI Session Flow Specification (v1.2)
 
 ## Specification Metadata
-- **Version:** 1.1.0 (Added documentation formatting guidelines)
+- **Version:** 1.2.0 (Clarified instruction-based architecture and terminology)
 - **Created:** October 2025
+- **Last Updated:** October 21, 2025
 - **Intended Audience:** AI-assisted developers, system designers, prompt engineers, LLM-based tooling architects
 - **Applicability:** Contextual AI assistants used in multi-step, developer-focused or project-based workflows
 - **License / Usage Note:** Open for adaptation and refinement in AI workflow tooling, documentation, and instructional materials
@@ -22,16 +23,24 @@ license: Open for adaptation and refinement
 
 ## Executive Summary
 
-Modern AI assistants often treat each interaction as an independent prompt without continuity, resulting in frequent misunderstandings, repeated explanations, and incorrect assumptions about the user's goals, role, or current phase of work. In professional environments—especially software development, technical architecture, prompt engineering, and iterative system design—this lack of persistent context reduces effectiveness, trust, and cognitive flow.
+Modern AI assistants often treat each interaction as an independent request without continuity, resulting in frequent misunderstandings, repeated explanations, and incorrect assumptions about the user's goals, role, or current phase of work. In professional environments—especially software development, technical architecture, prompt engineering, and iterative system design—this lack of persistent context reduces effectiveness, trust, and cognitive flow.
 
-This specification introduces a structured, deterministic session model in which assistant behavior is consistently governed by a defined set of contextual parameters: Persona, Project, Role, Phase, Output Style, Tone, and Interaction Mode. By shifting from context-free, turn-based prompting to stable, session-based reasoning, assistants become more reliable, aligned, and cooperative partners in complex workflows.
+This specification introduces a structured, deterministic **instruction-based session model** in which assistant behavior is consistently governed by a defined set of contextual parameters: Persona, Project, Role, Phase, Output Style, Tone, and Interaction Mode. By shifting from context-free, turn-based interactions to stable, instruction-based reasoning, assistants become more reliable, aligned, and cooperative partners in complex workflows.
 
-The document outlines how context should be:
-- Initialized  
-- Confirmed  
-- Persisted  
+### The Instruction-Based Paradigm
+
+This specification distinguishes between:
+
+- **Instructions** – Persistent context and guidelines (persona instructions, project instructions) that define WHO the user is, WHAT they're working on, and HOW the AI should behave
+- **Prompts/Queries** – Day-to-day requests the user makes within that instructed environment
+- **Session State** – The active combination of instruction layers and dynamic context that governs AI behavior
+
+The document outlines how instruction-based context should be:
+- Initialized from layered instruction sets (persona + project)
+- Confirmed and made transparent to the user
+- Persisted across conversation turns
 - Adapted across role or phase changes  
-- Communicated to the user  
+- Communicated clearly to maintain trust
 - Reset cleanly when needed  
 
 It defines transition rules, user control methods (via natural language or structured commands), and project-based default configurations. Real-world multi-phase scenarios demonstrate how the system behaves under different conditions. Potential future enhancements are also explored, including automatic phase inference, branch-based project mapping, and context checkpointing.
@@ -44,15 +53,56 @@ By adopting this specification, AI-assisted work sessions become more determinis
 
 This document defines a structured model for how an AI assistant should maintain and adapt context within technical and project-based workflows. It ensures that assistant interactions remain aligned with the user's intent across different roles (e.g., architect, developer, tester, prompt engineer), project phases (e.g., planning, implementation, debugging, review), and formatting expectations (e.g., detailed reasoning vs. minimal code).
 
-Rather than responding to isolated prompts with no continuity, a compliant assistant aligns itself with a persistent and evolving "session state" that governs how it interprets queries, reasons about solutions, and delivers responses. This minimizes repetitive setup instructions, reduces cognitive friction for the user, and ensures consistency and determinism in assistant behavior.
+Rather than responding to isolated requests with no continuity, a compliant assistant aligns itself with a persistent and evolving "session state" that governs how it interprets queries, reasons about solutions, and delivers responses. This minimizes repetitive setup instructions, reduces cognitive friction for the user, and ensures consistency and determinism in assistant behavior.
 
 By implementing this specification, an AI assistant transitions from being a transactional responder to acting as a contextually aware collaborator that supports complex, multi-step workflows in a reliable, role-appropriate manner.
 
 ---
 
+## 1.1 Conceptual Framework: Instructions vs. Prompts
+
+This specification is built on a critical distinction:
+
+### Instructions (Persistent Context)
+**What they are:**
+- Structured files (persona instructions, project instructions) that define persistent working context
+- Loaded once and remain active throughout a session
+- Define WHO the user is, WHAT they're working on, and HOW the AI should behave
+
+**Examples:**
+- Personal persona instructions: Professional background, skills, preferences, working style
+- Project instructions: Tech stack, architecture, roles, phases, constraints
+
+**Purpose:**
+- Eliminate repetitive context-setting
+- Create deterministic, consistent AI behavior
+- Enable portable AI workspace configurations across providers
+
+### Prompts/Queries (Transactional Requests)
+**What they are:**
+- Day-to-day questions and tasks the user asks within the instructed environment
+- Consumable and specific to immediate needs
+- What users traditionally think of as "prompts"
+
+**Examples:**
+- "Create a new authentication endpoint"
+- "Switch to Developer Mode and implement this feature"
+- "Review this code for security issues"
+
+### The Relationship
+Instructions create the **environment** in which prompts are interpreted. The same prompt ("create an API endpoint") will result in different outputs depending on the active instruction set (tech stack, architecture patterns, coding style preferences, etc.).
+
+This specification defines how AI assistants should:
+1. Load and layer instruction sets (persona + project)
+2. Maintain that instructed state persistently
+3. Adapt behavior based on session state changes
+4. Respond to user prompts/queries within that context
+
+---
+
 ## 2. Core Principles
 
-These principles define how a compliant assistant should behave during a context-driven session, ensuring reliability, trust, and alignment with user expectations.
+These principles define how a compliant assistant should behave during an instruction-driven session, ensuring reliability, trust, and alignment with user expectations.
 
 | Principle | Definition | Example |
 |-----------|-----------|---------|
@@ -646,7 +696,7 @@ Project defaults streamline initialization and reinforce workflow consistency wh
 
 ## 8.8 Documentation Formatting Guidelines
 
-To maintain professional clarity and reduce visual noise in context files (persona, project prompts, specification documents), the following formatting guidelines are recommended:
+To maintain professional clarity and reduce visual noise in instruction files (persona instructions, project instructions, specification documents), the following formatting guidelines are recommended:
 
 ### 8.8.1 No Decorative Icons or Emojis
 
