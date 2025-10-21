@@ -62,12 +62,17 @@ Project-specific extensions that define:
 **Purpose:** Provides focused context for AI to assist with specific projects effectively.
 
 ### 3. **Session State Model**
-A structured approach to AI collaboration that manages:
-- **Role/Mode:** The cognitive stance the AI should take (e.g., Architect, Developer, Reviewer)
-- **Phase:** Current work stage (Planning, Implementation, Debugging, Review)
-- **Output Style:** Verbosity and formatting preferences
-- **Tone:** Communication voice and attitude
-- **Interaction Mode:** How proactive the AI should be (Advisory, Pair-programming, Driver)
+A structured approach to AI collaboration that manages context dynamically:
+
+| Element | Description | Example Values |
+|---------|-------------|----------------|
+| **Persona** | Your identity, skills, and preferences | Defined in your persona file |
+| **Project** | Active domain or codebase | "Mobile UI app", "Backend API" |
+| **Role/Mode** | AI's cognitive stance | Architect, Developer, Designer, Reviewer |
+| **Phase** | Current work stage | Planning, Implementation, Debugging, Review |
+| **Output Style** | Response verbosity | Step-by-step, Minimal code, Annotated |
+| **Tone** | Communication voice | Analytical, Direct, Encouraging |
+| **Interaction Mode** | AI proactivity level | Advisory, Pair-programming, Driver |
 
 **Purpose:** Ensures AI behavior adapts appropriately as you move through different stages of work.
 
@@ -112,45 +117,23 @@ A structured approach to AI collaboration that manages:
 
 ---
 
-## Key Principles
-
-### Session State Management
-
-The system follows a **deterministic session model** where AI behavior is governed by:
-
-| Element | Description | Example Values |
-|---------|-------------|----------------|
-| **Persona** | Your identity, skills, and preferences | Defined in your persona file |
-| **Project** | Active domain or codebase | "Mobile UI app", "Backend API" |
-| **Role/Mode** | AI's cognitive stance | Architect, Developer, Designer, Reviewer |
-| **Phase** | Current work stage | Planning, Implementation, Debugging, Review |
-| **Output Style** | Response verbosity | Step-by-step, Minimal code, Annotated |
-| **Tone** | Communication voice | Analytical, Direct, Encouraging |
-| **Interaction Mode** | AI proactivity level | Advisory, Pair-programming, Driver |
+## How It Works
 
 ### Context Control
 
-You can modify session state using:
+You can modify session state dynamically using:
 
 - **Natural language:** "Switch to Developer Mode" or "Move to Implementation Phase"
 - **Commands:** `/mode developer`, `/phase implementation`, `/context` (shows current state)
 - **Project defaults:** Each project can define typical starting configurations
 
-### Core Principles
+### Design Principles
 
 - **Determinism:** Same context + same query = consistent responses
 - **Explicitness:** AI confirms context changes rather than assuming
 - **Continuity:** Session state persists across conversation turns
 - **Reversibility:** All context changes can be undone
 - **Transparency:** Current context is always visible on request
-
----
-
-## Documentation
-
-- **`templates/persona_template.instructions.md`** - Template for creating your personal AI persona with detailed instructions
-- **`templates/project_prompt_template.prompt.md`** - Template for creating project-specific contexts
-- **`specs/context_aware_ai_session_spec.md`** - Complete specification for implementing context-aware AI sessions, including session state model, context initialization flows, state transition rules, command interface definitions, and example scenarios
 
 ---
 
