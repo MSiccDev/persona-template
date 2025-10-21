@@ -258,6 +258,52 @@ This is a **GitHub template repository**. Here's how to use it:
 - **No upstream confusion:** It's your repository, not a fork
 - **Your data, your control:** Personal instructions stay in your private repo
 
+### Keeping Your Instance Up-to-Date
+
+When the template repository gets improvements, here's how to pull them into your instance:
+
+**Option 1: Manual Updates (Recommended)**
+```bash
+# Add the template as a remote (one-time setup)
+git remote add template https://github.com/MSiccDev/persona-template.git
+
+# Fetch template updates
+git fetch template
+
+# Review what changed in the template
+git log template/main
+
+# Cherry-pick specific improvements you want
+git cherry-pick <commit-hash>
+
+# Or merge specific files manually
+git checkout template/main -- README.md
+git checkout template/main -- specs/context_aware_ai_session_spec.md
+git checkout template/main -- templates/
+```
+
+**Option 2: Automated Merge (Use with Caution)**
+```bash
+# Merge all template changes
+git merge template/main --allow-unrelated-histories
+
+# Resolve conflicts (protect your personal files!)
+# Commit the merge
+```
+
+**Best Practice:**
+- Watch/star the template repository to get notified of updates
+- Review the CHANGELOG or commit history before updating
+- Only pull updates that add value to your workflow
+- **Always protect your personal instruction files** - never overwrite them
+
+**What to Update:**
+- ✅ Template files in `templates/`
+- ✅ Specification documents in `specs/`
+- ✅ README improvements
+- ❌ Your personal `*_persona.instructions.md`
+- ❌ Your project files in `projects/`
+
 ### Contributing Back
 
 Found a bug or have an improvement to the **template itself**?
