@@ -195,6 +195,12 @@ public class ProjectInstructionService : IProjectInstructionService
 
     private string GetProjectFilePath(string projectName)
     {
+        // Validate projectName to prevent path traversal and injection attacks
+        // Only allow alphanumeric, dash, and underscore characters
+        if (!Regex.IsMatch(projectName, @"^[a-zA-Z0-9_-]+$"))
+        {
+            throw new ArgumentException("Invalid project name. Only alphanumeric characters, dash, and underscore are allowed.", nameof(projectName));
+        }
         var repoPath = Path.GetFullPath(_config.PersonaRepoPath);
         var fileName = $"{projectName}_project.instructions.md";
         return Path.Combine(repoPath, fileName);
