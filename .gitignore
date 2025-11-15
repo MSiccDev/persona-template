@@ -4,3 +4,15 @@ Copilot-Processing.md
 .gitignore
 PHASE_2C_SUMMARY.md
 PHASE_2_SUMMARY.md
+
+# VS Code workspace settings (user-specific)
+.vscode/settings.json
+.vscode/mcp.json
+
+# Test/example persona and project files
+*_persona.instructions.md
+*_project.instructions.md
+
+# Keep templates
+!templates/*_persona.instructions.md
+!templates/*_project.instructions.md

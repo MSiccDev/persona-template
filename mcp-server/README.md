@@ -227,24 +227,15 @@ Add to your Claude Desktop MCP configuration (`~/Library/Application Support/Cla
 
 ### With VS Code (GitHub Copilot)
 
-Add to your VS Code MCP settings (`settings.json`):
+**Step 1:** Enable MCP in your workspace by creating `.vscode/settings.json`:
 
 ```json
 {
-  "github.copilot.chat.mcp.enabled": true,
-  "github.copilot.chat.mcp.servers": {
-    "persona-server": {
-      "command": "dotnet",
-      "args": ["run", "--project", "/path/to/persona-template/mcp-server/src"],
-      "env": {
-        "PERSONA_PersonaServer__PersonaRepoPath": "/path/to/your/personas"
-      }
-    }
-  }
+  "github.copilot.chat.mcp.enabled": true
 }
 ```
 
-Alternatively, create a `.vscode/mcp.json` in your workspace:
+**Step 2:** Configure the MCP server in `.vscode/mcp.json`:
 
 ```json
 {
@@ -260,10 +251,16 @@ Alternatively, create a `.vscode/mcp.json` in your workspace:
 }
 ```
 
+**Step 3:** Reload VS Code (`Cmd+Shift+P` → `Developer: Reload Window`)
+
+**Step 4:** Verify the server is running:
+- Open Output panel (`Cmd+Shift+U`)
+- Select "MCP (persona-server)" from the dropdown
+- You should see the server starting
+
 ### Querying Tools
 
-Once connected, you can use the tools:
-
+**In Claude Desktop:**
 ```
 User: List available personas
 AI: [calls persona_list tool] → ["developer", "architect", "reviewer"]
@@ -273,6 +270,30 @@ AI: [calls persona_get with name="developer"] → Returns full persona content
 
 User: Set developer as current persona
 AI: [calls persona_set_current with name="developer"] → Success
+```
+
+**In VS Code (GitHub Copilot Chat):**
+
+Use the `#` prefix to reference MCP tools directly:
+
+```
+#persona_list
+→ ["developer", "architect", "reviewer"]
+
+#persona_get with name="developer"
+→ Returns full persona content
+
+#persona_set_current with name="developer"
+→ Success
+```
+
+Or ask Copilot naturally and it will use the tools:
+```
+User: What personas are available?
+Copilot: [Uses persona_list tool] The available personas are: developer, architect, and reviewer.
+
+User: Show me the developer persona
+Copilot: [Uses persona_get tool] Here's the developer persona content...
 ```
 
 ---
