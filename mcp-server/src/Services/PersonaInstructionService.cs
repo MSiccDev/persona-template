@@ -195,11 +195,25 @@ public class PersonaInstructionService : IPersonaInstructionService
 
     private string GetPersonaFilePath(string personaName)
     {
+        // Sanitize personaName to prevent path traversal
+        var safePersonaName = Path.GetFileName(personaName);
+        if (!IsValidPersonaName(safePersonaName))
+        {
+            throw new ArgumentException("Persona name contains invalid characters.", nameof(personaName));
+        }
         var repoPath = Path.GetFullPath(_config.PersonaRepoPath);
-        var fileName = $"{personaName}_persona.instructions.md";
+        var fileName = $"{safePersonaName}_persona.instructions.md";
         return Path.Combine(repoPath, fileName);
     }
 
+    /// <summary>
+    /// Validates that the persona name contains only allowed characters (alphanumeric, underscore, hyphen).
+    /// </summary>
+    private static bool IsValidPersonaName(string personaName)
+    {
+        // Only allow letters, numbers, underscores, and hyphens
+        return Regex.IsMatch(personaName, @"^[a-zA-Z0-9_\-]+$");
+    }
     private async Task<PersonaInstruction> LoadPersonaFromFileAsync(
         string filePath, 
         string personaName, 
