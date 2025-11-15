@@ -225,6 +225,41 @@ Add to your Claude Desktop MCP configuration (`~/Library/Application Support/Cla
 }
 ```
 
+### With VS Code (GitHub Copilot)
+
+Add to your VS Code MCP settings (`settings.json`):
+
+```json
+{
+  "github.copilot.chat.mcp.enabled": true,
+  "github.copilot.chat.mcp.servers": {
+    "persona-server": {
+      "command": "dotnet",
+      "args": ["run", "--project", "/path/to/persona-template/mcp-server/src"],
+      "env": {
+        "PERSONA_PersonaServer__PersonaRepoPath": "/path/to/your/personas"
+      }
+    }
+  }
+}
+```
+
+Alternatively, create a `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "servers": {
+    "persona-server": {
+      "command": "dotnet",
+      "args": ["run", "--project", "/path/to/persona-template/mcp-server/src"],
+      "env": {
+        "PERSONA_PersonaServer__PersonaRepoPath": "/path/to/your/personas"
+      }
+    }
+  }
+}
+```
+
 ### Querying Tools
 
 Once connected, you can use the tools:
