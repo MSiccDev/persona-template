@@ -119,11 +119,6 @@ public class PersonaInstructionService : IPersonaInstructionService
             _logger.LogError(ex, "Access denied when listing available personas from {RepoPath}", _config.PersonaRepoPath);
             return Enumerable.Empty<string>();
         }
-        catch (DirectoryNotFoundException ex)
-        {
-            _logger.LogError(ex, "Directory not found when listing available personas from {RepoPath}", _config.PersonaRepoPath);
-            return Enumerable.Empty<string>();
-        }
     }
 
     /// <inheritdoc />
