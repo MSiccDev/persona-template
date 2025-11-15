@@ -109,9 +109,19 @@ public class PersonaInstructionService : IPersonaInstructionService
             _logger.LogInformation("Found {Count} persona instruction files", personaNames.Count);
             return await Task.FromResult(personaNames);
         }
-        catch (Exception ex)
+        catch (IOException ex)
         {
-            _logger.LogError(ex, "Error listing available personas from {RepoPath}", _config.PersonaRepoPath);
+            _logger.LogError(ex, "I/O error listing available personas from {RepoPath}", _config.PersonaRepoPath);
+            return Enumerable.Empty<string>();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogError(ex, "Access denied when listing available personas from {RepoPath}", _config.PersonaRepoPath);
+            return Enumerable.Empty<string>();
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            _logger.LogError(ex, "Directory not found when listing available personas from {RepoPath}", _config.PersonaRepoPath);
             return Enumerable.Empty<string>();
         }
     }
