@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mcp-server", "src\mcp-server.csproj", "{408175CD-DDC2-4939-A206-CAEAB271D58E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mcp-server.tests", "tests\mcp-server.tests.csproj", "{09A1F3A4-4413-4B63-9389-8D57EF2B5C15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{408175CD-DDC2-4939-A206-CAEAB271D58E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{408175CD-DDC2-4939-A206-CAEAB271D58E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{408175CD-DDC2-4939-A206-CAEAB271D58E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{408175CD-DDC2-4939-A206-CAEAB271D58E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09A1F3A4-4413-4B63-9389-8D57EF2B5C15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09A1F3A4-4413-4B63-9389-8D57EF2B5C15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09A1F3A4-4413-4B63-9389-8D57EF2B5C15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09A1F3A4-4413-4B63-9389-8D57EF2B5C15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -13,7 +13,7 @@ The C# MCP Server Template employs a layered architecture with dependency inject
 | **Hosting** | Microsoft.Extensions.Hosting | Dependency injection, configuration management, application lifecycle, .NET ecosystem standard | #reliable, #usable, #flexible |
 | **Transport** | HTTP/SSE (primary) + STDIO (fallback) | Web-based integration (HTTP/SSE) for modern clients, STDIO for legacy/simple integrations | #flexible, #usable |
 | **Configuration** | appsettings.json + Environment Variables | Standard .NET configuration, environment-specific overrides, Docker/cloud compatibility | #usable, #flexible |
-| **Testing** | xUnit + NSubstitute | Repository standard, >80% coverage requirement, comprehensive mocking support | #reliable, #secure |
+| **Testing** | xUnit + NSubstitute + AwesomeAssertions | Repository standard, >80% coverage requirement, comprehensive mocking and assertion support | #reliable, #secure |
 | **Deployment** | Docker + Multi-platform | Containerized deployment, cloud compatibility, consistent environments | #reliable, #flexible |
 
 ## Decomposition Strategy

@@ -115,7 +115,8 @@ description: 'Implementation Plan - Granular tasks for Phase 3'
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.6.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0" />
-    <PackageReference Include="Moq" Version="4.20.0" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="AwesomeAssertions" Version="9.3.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
 

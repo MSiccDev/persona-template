@@ -36,6 +36,11 @@ persona/
 │
 ├── README.md                          # This file
 │
+├── mcp-server/                        # MCP Server implementation
+│   ├── README.md                      # MCP server documentation
+│   ├── src/                           # Server source code
+│   └── tests/                         # Comprehensive test suite
+│
 ├── projects/
 │   └── project1_project.instructions.md      # Example project-specific instructions
 │
@@ -135,11 +140,24 @@ A structured approach to AI collaboration that manages context dynamically:
 |----------|---------|
 | **Anthropic Claude Projects** | Paste persona + project instructions into the *Project Knowledge* or *Custom Instructions* field |
 | **GitHub Copilot Edits** | Place `.instructions.md` files in workspace; Copilot automatically discovers and loads them |
+| **MCP-Compatible Clients** | Use the included **MCP Server** (see [mcp-server/README.md](mcp-server/README.md)) to expose instructions via Model Context Protocol |
 | **LM Studio / Ollama** | Save `.instructions.md` files as system prompts or instruction presets |
 | **OpenAI ChatGPT** | Paste into *Custom Instructions* or upload as a file |
 | **Gemini** | Paste into chat or use as system instruction |
 | **Local scripts / APIs** | Concatenate persona + project instructions when initializing conversations |
 | **IDE integrations** | Reference `.instructions.md` files in config or load via custom extensions |
+
+### MCP Server Integration
+
+This repository includes a **Model Context Protocol (MCP) server** implementation that exposes your persona and project instructions as MCP tools. This enables seamless integration with MCP-compatible AI clients like Claude Desktop and VS Code with GitHub Copilot.
+
+**Key Features:**
+- 14 MCP tools for managing persona and project instructions
+- File-based content provider with intelligent caching
+- Works with Claude Desktop, VS Code, and other MCP clients
+- 101 comprehensive tests ensuring reliability
+
+**Learn more:** See [mcp-server/README.md](mcp-server/README.md) for installation, configuration, and usage examples.
 
 ---
 
