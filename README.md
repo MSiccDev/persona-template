@@ -44,6 +44,12 @@ persona/
 ├── projects/
 │   └── project1_project.instructions.md      # Example project-specific instructions
 │
+├── prompts/                           # Provider-agnostic prompt files
+│   ├── create-persona-instructions.prompt.md    # Generate persona instruction files
+│   ├── create-project-instructions.prompt.md   # Generate project instruction files
+│   ├── validate-persona-instructions.prompt.md # Validate persona files
+│   └── validate-project-instructions.prompt.md # Validate project files
+│
 ├── specs/
 │   └── context_aware_ai_session_spec.md  # Specification for AI session management
 │
@@ -114,16 +120,20 @@ A structured approach to AI collaboration that manages context dynamically:
 ### For First-Time Users
 
 1. **Create Your Persona:**
-   - Copy `templates/persona_template.instructions.md`
-   - Fill in your professional details, skills, projects, and preferences
-   - Save as `yourname_persona.instructions.md` in the root folder
+   - **Manual:** Copy `templates/persona_template.instructions.md`, fill in your details, and save as `yourname_persona.instructions.md`
+   - **AI-Assisted:** Use `prompts/create-persona-instructions.prompt.md` with your preferred AI assistant for guided creation
 
 2. **Create Project Instructions:**
-   - Copy `templates/project_template.instructions.md` for each active project
-   - Define default roles, phases, and project-specific guidelines
+   - **Manual:** Copy `templates/project_template.instructions.md` and define your project
+   - **AI-Assisted:** Use `prompts/create-project-instructions.prompt.md` for guided project setup
    - Save in `projects/` folder with descriptive names (e.g., `projectname_project.instructions.md`)
 
-3. **Load Into Your AI Environment:**
+3. **Validate Your Instructions (Optional but Recommended):**
+   - Use `prompts/validate-persona-instructions.prompt.md` to check your persona file
+   - Use `prompts/validate-project-instructions.prompt.md` to check your project files
+   - Validation creates a `.validation.md` report with scoring and recommendations
+
+4. **Load Into Your AI Environment:**
    - See platform-specific instructions below
 
 ### For Returning Users
@@ -204,6 +214,60 @@ Each project instruction set should define:
 - Phase-specific guidelines
 - Output preferences
 - Constraints and special considerations
+
+---
+
+## Prompt System
+
+This repository includes a comprehensive **prompt system** for creating and validating instruction files:
+
+### Creation Prompts
+
+- **`prompts/create-persona-instructions.prompt.md`**
+  - 6-phase guided workflow for creating personal persona files
+  - Covers 15 required sections including professional background, technical skills, projects, and preferences
+  - Supports complex scenarios: dual professional contexts, 10+ projects, certifications, open source goals
+  - Generates both markdown and JSON metadata
+  - Privacy-conscious with placeholder support
+
+- **`prompts/create-project-instructions.prompt.md`**
+  - 7-phase guided workflow for creating project instruction files
+  - Covers 17 required sections per Context-Aware AI Session Flow Specification v1.2
+  - Includes session state model (6 elements) and command reference (7 commands)
+  - Defines AI roles, phases, and example task patterns
+  - Ensures spec compliance from the start
+
+### Validation Prompts
+
+- **`prompts/validate-persona-instructions.prompt.md`**
+  - 5-phase validation workflow with 100-point scoring system
+  - Validates YAML frontmatter, all 15 required sections, content completeness, and spec v1.2 compliance
+  - Generates `.validation.md` report with pass/fail status, issues, and recommendations
+  - Perfect for self-validation, CI/CD integration, and quality assurance
+
+- **`prompts/validate-project-instructions.prompt.md`**
+  - 5-phase validation workflow with 100-point scoring system
+  - Validates YAML frontmatter, all 17 required sections, session state model, and role definitions
+  - Generates `.validation.md` report with detailed findings and example fixes
+  - Includes common validation scenarios and troubleshooting
+
+### How to Use Prompts
+
+1. **Copy the prompt content** into your preferred AI assistant (Claude, GPT, Gemini, Mistral, etc.)
+2. **Follow the guided workflow** - the AI will ask questions and gather information
+3. **Review the generated output** - creation prompts produce complete instruction files
+4. **Validate your work** - use validation prompts to check for completeness and compliance
+5. **Iterate as needed** - validation reports provide specific recommendations
+
+### Validation Reports
+
+Validation prompts create persistent `.validation.md` files alongside your instruction files:
+
+- **Location:** Same directory as the validated file
+- **Naming:** `[filename].validation.md` (e.g., `marco_persona.validation.md`)
+- **Overwrite:** Each validation replaces the previous report
+- **Format:** Comprehensive markdown report with scoring, issues, and recommendations
+- **Benefits:** Easy review for both humans and LLMs, enables chunk-based processing
 
 ---
 
