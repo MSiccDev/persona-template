@@ -77,4 +77,12 @@ public interface IProjectInstructionService
         string template,
         Dictionary<string, string> replacements,
         CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Validates a project instruction file for required sections and proper formatting
+    /// </summary>
+    /// <param name="filePath">The full path to the project instruction file to validate</param>
+    /// <param name="cancellationToken">Cancellation token for async operation</param>
+    /// <returns>ValidationResult containing IsValid flag and any issues found</returns>
+    Task<ValidationResult> ValidateProjectAsync(string filePath, CancellationToken cancellationToken = default);
 }

@@ -374,4 +374,92 @@ public class ProjectInstructionService : IProjectInstructionService
                 nameof(name));
         }
     }
+
+    /// <inheritdoc />
+    public async Task<ValidationResult> ValidateProjectAsync(string filePath, CancellationToken cancellationToken = default)
+    {
+        var result = new ValidationResult();
+
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                result.AddError("File", $"Project instruction file not found at path: {filePath}");
+                return result;
+            }
+
+            var content = await File.ReadAllTextAsync(filePath, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                result.AddError("Content", "Project instruction file is empty");
+                return result;
+            }
+
+            var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            
+            // Check for YAML frontmatter
+            if (!lines.FirstOrDefault()?.StartsWith("---") ?? false)
+            {
+                result.AddWarning("Metadata", "Missing YAML frontmatter (---) at start of file");
+            }
+
+            // Check for required sections (heuristic: look for markdown headers)
+            var sectionHeaders = new[] { "# Overview", "# Goals", "# Scope", "# Requirements", "# Constraints" };
+            var foundSections = new HashSet<string>();
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                foreach (var section in sectionHeaders)
+                {
+                    if (lines[i].StartsWith(section))
+                    {
+                        foundSections.Add(section);
+                    }
+                }
+            }
+
+            // Warn about missing recommended sections
+            if (!foundSections.Contains("# Overview"))
+            {
+                result.AddWarning("Overview", "Recommended section '# Overview' not found");
+            }
+            if (!foundSections.Contains("# Goals"))
+            {
+                result.AddWarning("Goals", "Recommended section '# Goals' not found");
+            }
+            if (!foundSections.Contains("# Scope"))
+            {
+                result.AddWarning("Scope", "Recommended section '# Scope' not found");
+            }
+            if (!foundSections.Contains("# Requirements"))
+            {
+                result.AddWarning("Requirements", "Recommended section '# Requirements' not found");
+            }
+            if (!foundSections.Contains("# Constraints"))
+            {
+                result.AddWarning("Constraints", "Recommended section '# Constraints' not found");
+            }
+
+            // Check for minimum content length
+            if (content.Length < 100)
+            {
+                result.AddWarning("Content", "Project instruction content is quite short (< 100 characters)");
+            }
+
+            // Check for proper markdown formatting
+            var headerCount = lines.Count(l => l.StartsWith("#"));
+            if (headerCount < 2)
+            {
+                result.AddInfo("Format", "Consider adding section headers (# Header) for better structure");
+            }
+        }
+        catch (Exception ex)
+        {
+            result.AddError("Exception", $"Error validating project: {ex.Message}");
+            _logger.LogError(ex, "Error validating project at {FilePath}", filePath);
+        }
+
+        return result;
+    }
 }

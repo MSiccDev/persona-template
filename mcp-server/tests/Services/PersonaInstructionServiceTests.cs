@@ -427,6 +427,152 @@ Content here.";
         content.Should().Be("VALUE1 and VALUE2 and VALUE1 again");
     }
 
+    [Fact]
+    public async Task ValidatePersonaAsync_WithValidFile_ShouldReturnValid()
+    {
+        // Arrange
+        var validContent = @"---
+description: Test Persona
+applyTo: '**'
+---
+
+# Metadata
+Name: Test Persona
+
+# Behavior
+- Behaves professionally
+- Communicates clearly
+
+# Traits
+- Patient
+- Detail-oriented
+
+# Constraints
+- Works 9-5
+- On weekends off";
+
+        var testFile = Path.Combine(_testDirectory, "test_valid.md");
+        await File.WriteAllTextAsync(testFile, validContent);
+
+        // Act
+        var result = await _service.ValidatePersonaAsync(testFile);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Issues.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithMissingFile_ShouldReturnError()
+    {
+        // Arrange
+        var nonExistentFile = Path.Combine(_testDirectory, "nonexistent.md");
+
+        // Act
+        var result = await _service.ValidatePersonaAsync(nonExistentFile);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ErrorCount.Should().Be(1);
+        result.Issues.First().Severity.Should().Be(ValidationSeverity.Error);
+        result.Issues.First().Section.Should().Be("File");
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithEmptyFile_ShouldReturnError()
+    {
+        // Arrange
+        var testFile = Path.Combine(_testDirectory, "empty.md");
+        await File.WriteAllTextAsync(testFile, string.Empty);
+
+        // Act
+        var result = await _service.ValidatePersonaAsync(testFile);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ErrorCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithMissingFrontmatter_ShouldReturnWarning()
+    {
+        // Arrange
+        var content = "# Metadata\nTest content";
+        var testFile = Path.Combine(_testDirectory, "no_frontmatter.md");
+        await File.WriteAllTextAsync(testFile, content);
+
+        // Act
+        var result = await _service.ValidatePersonaAsync(testFile);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.WarningCount.Should().BeGreaterThan(0);
+        result.Issues.Any(i => i.Severity == ValidationSeverity.Warning && i.Section == "Metadata").Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithMissingSections_ShouldReturnWarnings()
+    {
+        // Arrange
+        var content = @"---
+description: Incomplete
+---
+
+# Metadata
+Only has metadata";
+
+        var testFile = Path.Combine(_testDirectory, "incomplete.md");
+        await File.WriteAllTextAsync(testFile, content);
+
+        // Act
+        var result = await _service.ValidatePersonaAsync(testFile);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.WarningCount.Should().BeGreaterThan(0);
+        result.Issues.Should().Contain(i => i.Section == "Behavior");
+        result.Issues.Should().Contain(i => i.Section == "Traits");
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithShortContent_ShouldReturnWarning()
+    {
+        // Arrange
+        var content = "---\n---\nShort";
+        var testFile = Path.Combine(_testDirectory, "short.md");
+        await File.WriteAllTextAsync(testFile, content);
+
+        // Act
+        var result = await _service.ValidatePersonaAsync(testFile);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.WarningCount.Should().BeGreaterThan(0);
+        result.Issues.Should().Contain(i => i.Section == "Content");
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithLowHeaderCount_ShouldReturnInfo()
+    {
+        // Arrange
+        var content = @"---
+description: Test
+---
+
+Just plain text without headers";
+
+        var testFile = Path.Combine(_testDirectory, "no_headers.md");
+        await File.WriteAllTextAsync(testFile, content);
+
+        // Act
+        var result = await _service.ValidatePersonaAsync(testFile);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.InfoCount.Should().BeGreaterThan(0);
+        result.Issues.Should().Contain(i => i.Severity == ValidationSeverity.Info && i.Section == "Format");
+    }
+
     private void CreateTestPersonaFile(string personaName, string content)
     {
         var fileName = $"{personaName}_persona.instructions.md";
