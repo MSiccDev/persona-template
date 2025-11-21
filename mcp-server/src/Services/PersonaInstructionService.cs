@@ -345,7 +345,11 @@ public class PersonaInstructionService : IPersonaInstructionService
         var content = template;
         foreach (var kvp in replacements)
         {
-            var token = $"{{{{{kvp.Key}}}}}";
+            // If key already contains brackets/angle brackets, use as-is
+            // Otherwise wrap in double curly braces for {{TOKEN}} format
+            var token = kvp.Key.StartsWith("[") || kvp.Key.StartsWith("<") || kvp.Key.StartsWith("{{")
+                ? kvp.Key
+                : $"{{{{{kvp.Key}}}}}";
             content = content.Replace(token, kvp.Value, StringComparison.Ordinal);
         }
 
