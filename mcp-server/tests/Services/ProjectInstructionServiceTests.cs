@@ -320,6 +320,114 @@ Content here.";
         second!.Content.Should().Be("Updated content", "cache expiration should reload from file");
     }
 
+    [Fact]
+    public async Task CreateProjectFromTemplateAsync_ShouldCreateFileInProjectsSubdirectory()
+    {
+        // Arrange
+        var name = "test-project";
+        var template = "---\nname: '{{project_name}}'\ndescription: '{{description}}'\n---\n\n# Project: {{project_name}}";
+        var replacements = new Dictionary<string, string>
+        {
+            { "project_name", "My Project" },
+            { "description", "Test Description" }
+        };
+
+        // Act
+        var filePath = await _service.CreateProjectFromTemplateAsync(name, template, replacements);
+
+        // Assert
+        File.Exists(filePath).Should().BeTrue("file should be created");
+        filePath.Should().EndWith("test-project_project.instructions.md");
+        var content = await File.ReadAllTextAsync(filePath);
+        content.Should().Contain("name: 'My Project'");
+        content.Should().Contain("# Project: My Project");
+        content.Should().NotContain("{{project_name}}");
+        content.Should().NotContain("{{description}}");
+    }
+
+    [Fact]
+    public async Task CreateProjectFromTemplateAsync_WithExistingFile_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        CreateTestProjectFile("existing", "content");
+        var template = "test";
+        var replacements = new Dictionary<string, string>();
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await _service.CreateProjectFromTemplateAsync("existing", template, replacements));
+        
+        exception.Message.Should().Contain("already exists");
+    }
+
+    [Fact]
+    public async Task CreateProjectFromTemplateAsync_WithInvalidName_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var template = "test";
+        var replacements = new Dictionary<string, string>();
+
+        // Act & Assert
+        var exception1 = await Assert.ThrowsAsync<ArgumentException>(
+            async () => await _service.CreateProjectFromTemplateAsync("invalid name", template, replacements));
+        exception1.ParamName.Should().Be("name");
+
+        var exception2 = await Assert.ThrowsAsync<ArgumentException>(
+            async () => await _service.CreateProjectFromTemplateAsync("invalid$name", template, replacements));
+        exception2.ParamName.Should().Be("name");
+
+        var exception3 = await Assert.ThrowsAsync<ArgumentException>(
+            async () => await _service.CreateProjectFromTemplateAsync("", template, replacements));
+        exception3.ParamName.Should().Be("name");
+    }
+
+    [Fact]
+    public async Task CreateProjectFromTemplateAsync_ShouldInvalidateCache()
+    {
+        // Arrange
+        var name = "cache-test";
+        var template = "---\nname: 'test'\ndescription: 'Test'\n---\n\nContent";
+        var replacements = new Dictionary<string, string>();
+
+        // Act
+        var filePath = await _service.CreateProjectFromTemplateAsync(name, template, replacements);
+        
+        // Load into cache
+        var project1 = await _service.GetProjectAsync(name);
+        
+        // Modify file directly
+        await File.WriteAllTextAsync(filePath, "---\nname: 'test'\ndescription: 'Test'\n---\n\nModified");
+        
+        // Invalidate and reload
+        _service.InvalidateCache(name);
+        var project2 = await _service.GetProjectAsync(name);
+
+        // Assert
+        project1.Should().NotBeNull();
+        project2.Should().NotBeNull();
+        project2!.Content.Should().Contain("Modified");
+    }
+
+    [Fact]
+    public async Task CreateProjectFromTemplateAsync_ShouldReplaceMultipleTokens()
+    {
+        // Arrange
+        var name = "multi-token";
+        var template = "{{token1}} and {{token2}} and {{token1}} again";
+        var replacements = new Dictionary<string, string>
+        {
+            { "token1", "VALUE1" },
+            { "token2", "VALUE2" }
+        };
+
+        // Act
+        var filePath = await _service.CreateProjectFromTemplateAsync(name, template, replacements);
+
+        // Assert
+        var content = await File.ReadAllTextAsync(filePath);
+        content.Should().Be("VALUE1 and VALUE2 and VALUE1 again");
+    }
+
     private void CreateTestProjectFile(string projectName, string content)
     {
         var fileName = $"{projectName}_project.instructions.md";

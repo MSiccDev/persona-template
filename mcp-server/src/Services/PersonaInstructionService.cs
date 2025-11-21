@@ -320,4 +320,59 @@ public class PersonaInstructionService : IPersonaInstructionService
 
         await Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public async Task<string> CreatePersonaFromTemplateAsync(
+        string name,
+        string template,
+        Dictionary<string, string> replacements,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate name format
+        ValidateInstructionName(name);
+
+        // Construct file path
+        var filePath = GetPersonaFilePath(name);
+
+        // Check if file already exists
+        if (File.Exists(filePath))
+        {
+            _logger.LogError("Persona file already exists: {FilePath}", filePath);
+            throw new InvalidOperationException($"Persona file '{name}_persona.instructions.md' already exists");
+        }
+
+        // Perform token replacement
+        var content = template;
+        foreach (var kvp in replacements)
+        {
+            var token = $"{{{{{kvp.Key}}}}}";
+            content = content.Replace(token, kvp.Value, StringComparison.Ordinal);
+        }
+
+        // Write file
+        await File.WriteAllTextAsync(filePath, content, cancellationToken);
+        _logger.LogInformation("Created persona file: {FilePath}", filePath);
+
+        // Invalidate cache to ensure fresh load
+        InvalidateCache(name);
+
+        return filePath;
+    }
+
+    private static void ValidateInstructionName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or whitespace", nameof(name));
+        }
+
+        // Only allow alphanumeric, hyphens, and underscores
+        var namePattern = new Regex(@"^[a-zA-Z0-9_-]+$");
+        if (!namePattern.IsMatch(name))
+        {
+            throw new ArgumentException(
+                "Name must contain only alphanumeric characters, hyphens, and underscores",
+                nameof(name));
+        }
+    }
 }

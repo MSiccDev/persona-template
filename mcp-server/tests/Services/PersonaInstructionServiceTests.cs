@@ -320,6 +320,113 @@ Content here.";
         second!.Content.Should().Be("Updated content", "cache expiration should reload from file");
     }
 
+    [Fact]
+    public async Task CreatePersonaFromTemplateAsync_ShouldCreateFile()
+    {
+        // Arrange
+        var name = "test-persona";
+        var template = "---\napplyTo: '**'\ndescription: 'Test'\n---\n\n# {{name}}'s Persona\n\nRole: {{role}}";
+        var replacements = new Dictionary<string, string>
+        {
+            { "name", "John Doe" },
+            { "role", "Developer" }
+        };
+
+        // Act
+        var filePath = await _service.CreatePersonaFromTemplateAsync(name, template, replacements);
+
+        // Assert
+        File.Exists(filePath).Should().BeTrue("file should be created");
+        var content = await File.ReadAllTextAsync(filePath);
+        content.Should().Contain("John Doe's Persona");
+        content.Should().Contain("Role: Developer");
+        content.Should().NotContain("{{name}}");
+        content.Should().NotContain("{{role}}");
+    }
+
+    [Fact]
+    public async Task CreatePersonaFromTemplateAsync_WithExistingFile_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        CreateTestPersonaFile("existing", "content");
+        var template = "test";
+        var replacements = new Dictionary<string, string>();
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await _service.CreatePersonaFromTemplateAsync("existing", template, replacements));
+        
+        exception.Message.Should().Contain("already exists");
+    }
+
+    [Fact]
+    public async Task CreatePersonaFromTemplateAsync_WithInvalidName_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var template = "test";
+        var replacements = new Dictionary<string, string>();
+
+        // Act & Assert
+        var exception1 = await Assert.ThrowsAsync<ArgumentException>(
+            async () => await _service.CreatePersonaFromTemplateAsync("invalid name", template, replacements));
+        exception1.ParamName.Should().Be("name");
+
+        var exception2 = await Assert.ThrowsAsync<ArgumentException>(
+            async () => await _service.CreatePersonaFromTemplateAsync("invalid@name", template, replacements));
+        exception2.ParamName.Should().Be("name");
+
+        var exception3 = await Assert.ThrowsAsync<ArgumentException>(
+            async () => await _service.CreatePersonaFromTemplateAsync("", template, replacements));
+        exception3.ParamName.Should().Be("name");
+    }
+
+    [Fact]
+    public async Task CreatePersonaFromTemplateAsync_ShouldInvalidateCache()
+    {
+        // Arrange
+        var name = "cache-test";
+        var template = "---\napplyTo: '**'\ndescription: 'Test'\n---\n\nContent";
+        var replacements = new Dictionary<string, string>();
+
+        // Act
+        var filePath = await _service.CreatePersonaFromTemplateAsync(name, template, replacements);
+        
+        // Load into cache
+        var persona1 = await _service.GetPersonaAsync(name);
+        
+        // Modify file directly
+        await File.WriteAllTextAsync(filePath, "---\napplyTo: '**'\ndescription: 'Test'\n---\n\nModified");
+        
+        // Invalidate and reload
+        _service.InvalidateCache(name);
+        var persona2 = await _service.GetPersonaAsync(name);
+
+        // Assert
+        persona1.Should().NotBeNull();
+        persona2.Should().NotBeNull();
+        persona2!.Content.Should().Contain("Modified");
+    }
+
+    [Fact]
+    public async Task CreatePersonaFromTemplateAsync_ShouldReplaceMultipleTokens()
+    {
+        // Arrange
+        var name = "multi-token";
+        var template = "{{token1}} and {{token2}} and {{token1}} again";
+        var replacements = new Dictionary<string, string>
+        {
+            { "token1", "VALUE1" },
+            { "token2", "VALUE2" }
+        };
+
+        // Act
+        var filePath = await _service.CreatePersonaFromTemplateAsync(name, template, replacements);
+
+        // Assert
+        var content = await File.ReadAllTextAsync(filePath);
+        content.Should().Be("VALUE1 and VALUE2 and VALUE1 again");
+    }
+
     private void CreateTestPersonaFile(string personaName, string content)
     {
         var fileName = $"{personaName}_persona.instructions.md";
