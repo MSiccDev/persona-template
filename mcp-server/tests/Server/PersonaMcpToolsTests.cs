@@ -319,4 +319,80 @@ public class PersonaMcpToolsTests
         result.Should().Contain("\"error\"", "should contain error field");
         result.Should().Contain("Failed to create persona", "should include error prefix");
     }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithValidFile_ShouldReturnValidJson()
+    {
+        // Arrange
+        var validResult = new ValidationResult();
+        var testPath = "/test/persona.md";
+        _mockService.ValidatePersonaAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(validResult);
+
+        // Act
+        var result = await _tools.ValidatePersonaAsync(testPath);
+
+        // Assert
+        result.Should().NotBeNull("result should not be null");
+        result.Should().Contain("\"isValid\": true", "should indicate file is valid");
+        result.Should().Contain("\"issues\": []", "should have empty issues array");
+        await _mockService.Received(1).ValidatePersonaAsync(testPath, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithValidationIssues_ShouldReturnIssuesInJson()
+    {
+        // Arrange
+        var result = new ValidationResult();
+        result.AddError("Metadata", "Missing section");
+        result.AddWarning("Content", "Content too short");
+        var testPath = "/test/persona.md";
+        _mockService.ValidatePersonaAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(result);
+
+        // Act
+        var jsonResult = await _tools.ValidatePersonaAsync(testPath);
+
+        // Assert
+        jsonResult.Should().NotBeNull("result should not be null");
+        jsonResult.Should().Contain("\"isValid\": false", "should indicate file is invalid");
+        jsonResult.Should().Contain("\"errorCount\": 1", "should include error count");
+        jsonResult.Should().Contain("\"warningCount\": 1", "should include warning count");
+        jsonResult.Should().Contain("\"severity\": \"Error\"", "should include error severity");
+        jsonResult.Should().Contain("\"severity\": \"Warning\"", "should include warning severity");
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithFileNotFound_ShouldReturnErrorJson()
+    {
+        // Arrange
+        var testPath = "/nonexistent/persona.md";
+        _mockService.ValidatePersonaAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ValidationResult>(new FileNotFoundException("File not found")));
+
+        // Act
+        var result = await _tools.ValidatePersonaAsync(testPath);
+
+        // Assert
+        result.Should().NotBeNull("result should not be null");
+        result.Should().Contain("\"error\"", "should contain error field");
+        result.Should().Contain("File not found", "should include file not found message");
+    }
+
+    [Fact]
+    public async Task ValidatePersonaAsync_WithException_ShouldReturnErrorJson()
+    {
+        // Arrange
+        var testPath = "/test/persona.md";
+        _mockService.ValidatePersonaAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ValidationResult>(new Exception("Unexpected error")));
+
+        // Act
+        var result = await _tools.ValidatePersonaAsync(testPath);
+
+        // Assert
+        result.Should().NotBeNull("result should not be null");
+        result.Should().Contain("\"error\"", "should contain error field");
+        result.Should().Contain("Validation failed", "should include validation failed message");
+    }
 }

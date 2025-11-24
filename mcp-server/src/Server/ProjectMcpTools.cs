@@ -231,4 +231,52 @@ public class ProjectMcpTools
             return System.Text.Json.JsonSerializer.Serialize(new { error = $"Failed to create project: {ex.Message}" });
         }
     }
+
+    /// <summary>
+    /// Validates a project instruction file
+    /// </summary>
+    /// <param name="filePath">The path to the project file to validate</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>JSON representation of the validation result with issues array</returns>
+    [McpServerTool(Name = "project_validate")]
+    [Description("Validates a project instruction file for required sections and proper formatting")]
+    public async Task<string> ValidateProjectAsync(
+        [Description("The path to the project instruction file to validate")] string filePath,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var validationResult = await _projectService.ValidateProjectAsync(filePath, cancellationToken);
+            
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                isValid = validationResult.IsValid,
+                errorCount = validationResult.ErrorCount,
+                warningCount = validationResult.WarningCount,
+                infoCount = validationResult.InfoCount,
+                issues = validationResult.Issues.ConvertAll(issue => new
+                {
+                    severity = issue.Severity.ToString(),
+                    section = issue.Section,
+                    message = issue.Message,
+                    lineNumber = issue.LineNumber
+                })
+            }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        }
+        catch (FileNotFoundException ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                error = $"File not found: {ex.Message}",
+                filePath
+            });
+        }
+        catch (Exception ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                error = $"Validation failed: {ex.Message}"
+            });
+        }
+    }
 }
