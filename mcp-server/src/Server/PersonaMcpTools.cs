@@ -18,14 +18,17 @@ namespace PersonaMcpServer.Server;
 public class PersonaMcpTools
 {
     private readonly IPersonaInstructionService _personaService;
+    private readonly ITemplateService _templateService;
 
     /// <summary>
     /// Initializes a new instance of the PersonaMcpTools class
     /// </summary>
     /// <param name="personaService">Service for persona instruction operations</param>
-    public PersonaMcpTools(IPersonaInstructionService personaService)
+    /// <param name="templateService">Service for template operations</param>
+    public PersonaMcpTools(IPersonaInstructionService personaService, ITemplateService templateService)
     {
         _personaService = personaService;
+        _templateService = templateService;
     }
 
     /// <summary>
@@ -165,5 +168,113 @@ public class PersonaMcpTools
     {
         await _personaService.RefreshCacheAsync(cancellationToken);
         return "{\"success\": true, \"message\": \"Persona cache refreshed\"}";
+    }
+
+    /// <summary>
+    /// Creates a new persona instruction file from the template
+    /// </summary>
+    /// <param name="name">The name for the new persona file (e.g., 'my-persona')</param>
+    /// <param name="yourName">Your name to replace [Your Name] placeholder</param>
+    /// <param name="role">Your role/title to replace [Your Role/Title] placeholder</param>
+    /// <param name="location">Your location to replace [Your Location] placeholder</param>
+    /// <param name="ecosystem">Your primary ecosystem to replace [e.g., Apple, Windows, Linux...] placeholder</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success message with file path or error</returns>
+    [McpServerTool(Name = "persona_create_from_template")]
+    [Description("Creates a new persona instruction file from the template with specified values")]
+    public async Task<string> CreateFromTemplateAsync(
+        [Description("The name for the new persona file (e.g., 'my-persona')")] string name,
+        [Description("Your name to replace [Your Name] placeholder")] string yourName,
+        [Description("Your role/title to replace [Your Role/Title] placeholder")] string role,
+        [Description("Your location to replace [Your Location] placeholder")] string location,
+        [Description("Your primary ecosystem to replace [e.g., Apple, Windows...] placeholder")] string ecosystem,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Load template
+            var template = await _templateService.GetPersonaTemplateAsync(cancellationToken);
+            
+            // Build replacements dictionary
+            var replacements = new System.Collections.Generic.Dictionary<string, string>
+            {
+                { "[Your Name]", yourName },
+                { "[Your Role/Title]", role },
+                { "[Your Location]", location },
+                { "[location]", location },
+                { "[Your primary ecosystem]", ecosystem },
+                { "[e.g., Apple, Windows, Linux, Cloud-native, etc.]", ecosystem }
+            };
+            
+            // Create file from template
+            var filePath = await _personaService.CreatePersonaFromTemplateAsync(name, template, replacements, cancellationToken);
+            
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                success = true,
+                message = $"Persona '{name}' created successfully",
+                filePath
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new { error = $"Failed to create persona: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// Validates a persona instruction file
+    /// </summary>
+    /// <param name="filePath">The path to the persona file to validate</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>JSON representation of the validation result with issues array</returns>
+    [McpServerTool(Name = "persona_validate")]
+    [Description("Validates a persona instruction file for required sections and proper formatting")]
+    public async Task<string> ValidatePersonaAsync(
+        [Description("The path to the persona instruction file to validate")] string filePath,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var validationResult = await _personaService.ValidatePersonaAsync(filePath, cancellationToken);
+            
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                isValid = validationResult.IsValid,
+                errorCount = validationResult.ErrorCount,
+                warningCount = validationResult.WarningCount,
+                infoCount = validationResult.InfoCount,
+                issues = validationResult.Issues.ConvertAll(issue => new
+                {
+                    severity = issue.Severity.ToString(),
+                    section = issue.Section,
+                    message = issue.Message,
+                    lineNumber = issue.LineNumber
+                })
+            }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        }
+        catch (FileNotFoundException ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                error = $"File not found: {ex.Message}",
+                filePath
+            });
+        }
+        catch (Exception ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                error = $"Validation failed: {ex.Message}"
+            });
+        }
     }
 }

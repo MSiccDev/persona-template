@@ -36,6 +36,31 @@ public class McpServerIntegrationTests : IDisposable
         _testDirectory = Path.Combine(Path.GetTempPath(), $"mcp_integration_{Guid.NewGuid()}");
         Directory.CreateDirectory(_testDirectory);
 
+        // Create templates directory within test directory for isolation
+        var sourceTemplatesDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "templates"));
+        var testTempRoot = Path.Combine(Path.GetTempPath(), $"mcp_test_root_{Guid.NewGuid()}");
+        var targetTemplatesDirectory = Path.Combine(testTempRoot, "templates");
+        Directory.CreateDirectory(targetTemplatesDirectory);
+        
+        // Update test directory to be inside the test root so templates path works correctly
+        var oldTestDirectory = _testDirectory;
+        _testDirectory = Path.Combine(testTempRoot, Path.GetFileName(_testDirectory));
+        Directory.Move(oldTestDirectory, _testDirectory);
+        
+        // Copy actual template files if they exist
+        var personaTemplatePath = Path.Combine(sourceTemplatesDirectory, "persona_template.instructions.md");
+        var projectTemplatePath = Path.Combine(sourceTemplatesDirectory, "project_template.instructions.md");
+        
+        if (File.Exists(personaTemplatePath))
+        {
+            File.Copy(personaTemplatePath, Path.Combine(targetTemplatesDirectory, "persona_template.instructions.md"), overwrite: true);
+        }
+        
+        if (File.Exists(projectTemplatePath))
+        {
+            File.Copy(projectTemplatePath, Path.Combine(targetTemplatesDirectory, "project_template.instructions.md"), overwrite: true);
+        }
+
         // Create test persona and project files
         CreateTestPersonaFile("developer", "---\napplyTo: '**/*.cs'\ndescription: 'Developer persona'\n---\n# Developer\nTest developer persona");
         CreateTestPersonaFile("architect", "---\napplyTo: '**/*.md'\ndescription: 'Architect persona'\n---\n# Architect\nTest architect persona");
@@ -64,6 +89,8 @@ public class McpServerIntegrationTests : IDisposable
 
         builder.Services.AddSingleton<IPersonaInstructionService, PersonaInstructionService>();
         builder.Services.AddSingleton<IProjectInstructionService, ProjectInstructionService>();
+        builder.Services.AddSingleton<ITemplateService, TemplateService>();
+        builder.Services.AddSingleton<IPromptService, PromptService>();
         builder.Services.AddSingleton<PersonaMcpTools>();
         builder.Services.AddSingleton<ProjectMcpTools>();
 
@@ -76,9 +103,19 @@ public class McpServerIntegrationTests : IDisposable
     public void Dispose()
     {
         _host?.Dispose();
-        if (Directory.Exists(_testDirectory))
+        
+        // Clean up the entire test root directory (includes both test directory and templates)
+        var testRootDirectory = Path.GetDirectoryName(_testDirectory);
+        if (testRootDirectory != null && Directory.Exists(testRootDirectory) && testRootDirectory.Contains("mcp_test_root_"))
         {
-            Directory.Delete(_testDirectory, true);
+            try
+            {
+                Directory.Delete(testRootDirectory, recursive: true);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
         }
     }
 

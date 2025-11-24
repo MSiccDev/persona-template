@@ -34,17 +34,23 @@ builder.Services.AddOptions<PersonaServerConfig>()
 // Register services
 builder.Services.AddSingleton<IPersonaInstructionService, PersonaInstructionService>();
 builder.Services.AddSingleton<IProjectInstructionService, ProjectInstructionService>();
+builder.Services.AddSingleton<ITemplateService, TemplateService>();
+builder.Services.AddSingleton<IPromptService, PromptService>();
 
 // Register MCP tool classes for dependency injection
 builder.Services.AddSingleton<PersonaMcpTools>();
 builder.Services.AddSingleton<ProjectMcpTools>();
+builder.Services.AddSingleton<TemplateMcpTools>();
+builder.Services.AddSingleton<ValidationPrompts>();
 
 // Configure MCP server with stdio transport
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
     .WithTools<PersonaMcpTools>()
-    .WithTools<ProjectMcpTools>();
+    .WithTools<ProjectMcpTools>()
+    .WithTools<TemplateMcpTools>()
+    .WithPrompts<ValidationPrompts>();
 
 // Build and run the host
 var host = builder.Build();
