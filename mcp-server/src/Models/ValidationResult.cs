@@ -16,7 +16,8 @@ public class ValidationResult
 /// Gets or sets a value indicating whether validation passed (no errors).
 /// </summary>
 [JsonPropertyName("isValid")]
-public bool IsValid { get; set; } = true;    /// <summary>
+public bool IsValid { get; set; } = true;
+    /// <summary>
     /// Gets or sets the collection of validation issues found during validation.
     /// </summary>
     [JsonPropertyName("issues")]

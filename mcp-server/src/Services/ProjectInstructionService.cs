@@ -399,7 +399,7 @@ public class ProjectInstructionService : IProjectInstructionService
             var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             
             // Check for YAML frontmatter
-            if (!lines.FirstOrDefault()?.StartsWith("---") ?? false)
+            if (lines.Length > 0 && !lines[0].StartsWith("---"))
             {
                 result.AddWarning("Metadata", "Missing YAML frontmatter (---) at start of file");
             }
