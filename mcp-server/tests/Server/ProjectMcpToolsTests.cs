@@ -20,12 +20,14 @@ namespace PersonaMcpServer.Tests.Server;
 public class ProjectMcpToolsTests
 {
     private readonly IProjectInstructionService _mockService;
+    private readonly ITemplateService _mockTemplateService;
     private readonly ProjectMcpTools _tools;
 
     public ProjectMcpToolsTests()
     {
         _mockService = Substitute.For<IProjectInstructionService>();
-        _tools = new ProjectMcpTools(_mockService);
+        _mockTemplateService = Substitute.For<ITemplateService>();
+        _tools = new ProjectMcpTools(_mockService, _mockTemplateService);
     }
 
     [Fact]
@@ -222,5 +224,175 @@ public class ProjectMcpToolsTests
         result.Should().Contain("\"success\": true", "should indicate success");
         result.Should().Contain("refreshed", "should indicate cache refresh");
         await _mockService.Received(1).RefreshCacheAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateFromTemplateAsync_ShouldCreateProject()
+    {
+        // Arrange
+        var template = "---\napplyTo: '**/*.cs'\n---\n# Project Instructions – <Project Name>\n";
+        var filePath = "/path/to/test-project_project.instructions.md";
+        
+        _mockTemplateService.GetProjectTemplateAsync(Arg.Any<CancellationToken>())
+            .Returns(template);
+        _mockService.CreateProjectFromTemplateAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<System.Collections.Generic.Dictionary<string, string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(filePath);
+
+        // Act
+        var result = await _tools.CreateFromTemplateAsync("test-project", "My Project", "A test project", "Development", "C#", "ASP.NET Core");
+
+        // Assert
+        result.Should().Contain("success", "should indicate success");
+        result.Should().Contain("true", "should indicate success status");
+        result.Should().Contain("test-project", "should include project name");
+        result.Should().Contain(filePath, "should include file path");
+        await _mockTemplateService.Received(1).GetProjectTemplateAsync(Arg.Any<CancellationToken>());
+        await _mockService.Received(1).CreateProjectFromTemplateAsync(
+            "test-project",
+            template,
+            Arg.Is<System.Collections.Generic.Dictionary<string, string>>(d => 
+                d["<Project Name>"] == "My Project" && 
+                d["<short description>"] == "A test project" &&
+                d["<planning / prototype / active development / maintenance / MVP / release>"] == "Development"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateFromTemplateAsync_WithExistingFile_ShouldReturnJsonError()
+    {
+        // Arrange
+        var template = "template content";
+        _mockTemplateService.GetProjectTemplateAsync(Arg.Any<CancellationToken>())
+            .Returns(template);
+        _mockService.CreateProjectFromTemplateAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<System.Collections.Generic.Dictionary<string, string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<string>(new InvalidOperationException("File already exists")));
+
+        // Act
+        var result = await _tools.CreateFromTemplateAsync("existing-project", "Project", "Desc", "Dev", "C#", "ASP.NET");
+
+        // Assert
+        result.Should().Contain("\"error\"", "should contain error field");
+        result.Should().Contain("File already exists", "should include error message");
+    }
+
+    [Fact]
+    public async Task CreateFromTemplateAsync_WithInvalidName_ShouldReturnJsonError()
+    {
+        // Arrange
+        var template = "template content";
+        _mockTemplateService.GetProjectTemplateAsync(Arg.Any<CancellationToken>())
+            .Returns(template);
+        _mockService.CreateProjectFromTemplateAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<System.Collections.Generic.Dictionary<string, string>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<string>(new ArgumentException("Invalid name format")));
+
+        // Act
+        var result = await _tools.CreateFromTemplateAsync("invalid name", "Project", "Desc", "Dev", "C#", "ASP.NET");
+
+        // Assert
+        result.Should().Contain("\"error\"", "should contain error field");
+        result.Should().Contain("Invalid name format", "should include error message");
+    }
+
+    [Fact]
+    public async Task CreateFromTemplateAsync_WithTemplateError_ShouldReturnJsonError()
+    {
+        // Arrange
+        _mockTemplateService.GetProjectTemplateAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<string>(new FileNotFoundException("Template not found")));
+
+        // Act
+        var result = await _tools.CreateFromTemplateAsync("test-project", "Project", "Desc", "Dev", "C#", "ASP.NET");
+
+        // Assert
+        result.Should().Contain("\"error\"", "should contain error field");
+        result.Should().Contain("Failed to create project", "should include error prefix");
+    }
+
+    [Fact]
+    public async Task ValidateProjectAsync_WithValidFile_ShouldReturnValidJson()
+    {
+        // Arrange
+        var validResult = new ValidationResult();
+        var testPath = "/test/project.md";
+        _mockService.ValidateProjectAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(validResult);
+
+        // Act
+        var result = await _tools.ValidateProjectAsync(testPath);
+
+        // Assert
+        result.Should().NotBeNull("result should not be null");
+        result.Should().Contain("\"isValid\": true", "should indicate file is valid");
+        result.Should().Contain("\"issues\": []", "should have empty issues array");
+        await _mockService.Received(1).ValidateProjectAsync(testPath, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ValidateProjectAsync_WithValidationIssues_ShouldReturnIssuesInJson()
+    {
+        // Arrange
+        var result = new ValidationResult();
+        result.AddError("Overview", "Missing section");
+        result.AddWarning("Content", "Content too short");
+        var testPath = "/test/project.md";
+        _mockService.ValidateProjectAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(result);
+
+        // Act
+        var jsonResult = await _tools.ValidateProjectAsync(testPath);
+
+        // Assert
+        jsonResult.Should().NotBeNull("result should not be null");
+        jsonResult.Should().Contain("\"isValid\": false", "should indicate file is invalid");
+        jsonResult.Should().Contain("\"errorCount\": 1", "should include error count");
+        jsonResult.Should().Contain("\"warningCount\": 1", "should include warning count");
+        jsonResult.Should().Contain("\"severity\": \"Error\"", "should include error severity");
+        jsonResult.Should().Contain("\"severity\": \"Warning\"", "should include warning severity");
+    }
+
+    [Fact]
+    public async Task ValidateProjectAsync_WithFileNotFound_ShouldReturnErrorJson()
+    {
+        // Arrange
+        var testPath = "/nonexistent/project.md";
+        _mockService.ValidateProjectAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ValidationResult>(new FileNotFoundException("File not found")));
+
+        // Act
+        var result = await _tools.ValidateProjectAsync(testPath);
+
+        // Assert
+        result.Should().NotBeNull("result should not be null");
+        result.Should().Contain("\"error\"", "should contain error field");
+        result.Should().Contain("File not found", "should include file not found message");
+    }
+
+    [Fact]
+    public async Task ValidateProjectAsync_WithException_ShouldReturnErrorJson()
+    {
+        // Arrange
+        var testPath = "/test/project.md";
+        _mockService.ValidateProjectAsync(testPath, Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ValidationResult>(new Exception("Unexpected error")));
+
+        // Act
+        var result = await _tools.ValidateProjectAsync(testPath);
+
+        // Assert
+        result.Should().NotBeNull("result should not be null");
+        result.Should().Contain("\"error\"", "should contain error field");
+        result.Should().Contain("Validation failed", "should include validation failed message");
     }
 }

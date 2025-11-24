@@ -20,22 +20,28 @@ The C# MCP Server Template employs a layered architecture with dependency inject
 
 **Approach:** Layered Architecture with Clean Separation of Concerns
 
-**Rationale:** Supports maintainability (#flexible), enables clear responsibility boundaries, facilitates testing (#reliable), and provides straightforward extension points for new MCP resources and tools. The layered approach aligns with .NET conventions and supports the provider-agnostic requirement.
+**Rationale:** Supports maintainability (#flexible), enables clear responsibility boundaries, facilitates testing (#reliable), and provides straightforward extension points for new MCP tools and prompts. The layered approach aligns with .NET conventions and supports the provider-agnostic requirement.
 
 **High-Level Structure:**
 ```
-┌─────────────────────────────────────────┐
-│              MCP Protocol Layer          │  ← HTTP/SSE + STDIO Transports
-├─────────────────────────────────────────┤
-│         Handlers/ (MCP Interfaces)      │  ← PersonaResourceHandler, ProjectResourceHandler, InstructionToolHandler
-├─────────────────────────────────────────┤
-│         Services/ (Business Logic)      │  ← PersonaInstructionService, FileCache, PathValidator
-├─────────────────────────────────────────┤
-│         Config/ (Configuration)         │  ← PersonaServerConfig, Environment Variables
-├─────────────────────────────────────────┤
-│              File System                 │  ← Persona-template repository access
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│              MCP Protocol Layer                      │  ← HTTP/SSE + STDIO Transports
+├─────────────────────────────────────────────────────┤
+│         MCP Tools & Prompts Layer                   │  ← PersonaMcpTools, ProjectMcpTools, 
+│                                                     │     TemplateMcpTools, ValidationPrompts
+├─────────────────────────────────────────────────────┤
+│    Validation & Business Logic Services            │  ← PersonaInstructionService, 
+│                                                     │     ProjectInstructionService,
+│                                                     │     TemplateService, PromptService
+├─────────────────────────────────────────────────────┤
+│    Infrastructure & Configuration Layer            │  ← PersonaServerConfig, 
+│                                                     │     Environment Variables, Caching
+├─────────────────────────────────────────────────────┤
+│              File System                             │  ← Persona-template repository access
+└─────────────────────────────────────────────────────┘
 ```
+
+**Design Pattern:** MCP Tool-Based (18 tools) + MCP Prompts-Based (2 validation prompts), NOT resource-based. Tools provide direct action endpoints for instruction management (list, get, create, validate), while prompts support validation workflows with content injection.
 
 ---
 
@@ -104,10 +110,10 @@ The C# MCP Server Template employs a layered architecture with dependency inject
    - **Consequences:** ✅ Fast responses, configurable freshness ❌ Potential stale data, memory usage
    - **See also:** ADR-004 (Section 9)
 
-5. **Attribute-Based Handler Discovery**
-   - **Context:** Extensibility requirement and clean registration
-   - **Decision:** Use `[McpServerResourceType]` and `[McpServerToolType]` attributes for auto-discovery
-   - **Consequences:** ✅ Easy extensibility, no manual registration ❌ Runtime discovery overhead, reflection usage
+5. **MCP Tool-Based Architecture**
+   - **Context:** Clients need flexible action-oriented interface for instruction management
+   - **Decision:** Implement 18 MCP tools (3 classes: PersonaMcpTools, ProjectMcpTools, TemplateMcpTools) + 2 validation prompts instead of resources
+   - **Consequences:** ✅ More flexible, direct action endpoints, easier for clients to compose workflows ❌ More tools to maintain, larger surface area
    - **See also:** ADR-005 (Section 9)
 
 ## Cross-References

@@ -46,7 +46,7 @@ This section documents constraints that restrict design, implementation, or proc
 | **File-Scoped Namespaces** | C# 10+ feature for cleaner code organization | Code Organization Standard | No |
 | **Async/Await Pattern** | All I/O operations must be asynchronous with CancellationToken support | Performance Standards | No |
 | **Dependency Injection** | Constructor injection for all services, no service locator pattern | Architecture Pattern | No |
-| **Attribute-Based Discovery** | Use `[McpServerResourceType]` and `[McpServerToolType]` for auto-discovery | Framework Convention | No |
+| **Attribute-Based Tool Discovery** | Use `[McpServerTool]` and `[McpServerPrompt]` for auto-discovery of MCP tools and prompts | Framework Convention | No |
 
 ## 2.5 Constraint Impact Analysis
 

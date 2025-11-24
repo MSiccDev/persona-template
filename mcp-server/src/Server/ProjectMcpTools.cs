@@ -18,14 +18,17 @@ namespace PersonaMcpServer.Server;
 public class ProjectMcpTools
 {
     private readonly IProjectInstructionService _projectService;
+    private readonly ITemplateService _templateService;
 
     /// <summary>
     /// Initializes a new instance of the ProjectMcpTools class
     /// </summary>
     /// <param name="projectService">Service for project instruction operations</param>
-    public ProjectMcpTools(IProjectInstructionService projectService)
+    /// <param name="templateService">Service for template operations</param>
+    public ProjectMcpTools(IProjectInstructionService projectService, ITemplateService templateService)
     {
         _projectService = projectService;
+        _templateService = templateService;
     }
 
     /// <summary>
@@ -165,5 +168,115 @@ public class ProjectMcpTools
     {
         await _projectService.RefreshCacheAsync(cancellationToken);
         return "{\"success\": true, \"message\": \"Project cache refreshed\"}";
+    }
+
+    /// <summary>
+    /// Creates a new project instruction file from the template
+    /// </summary>
+    /// <param name="name">The name for the new project file (e.g., 'my-project')</param>
+    /// <param name="projectName">Project name to replace <Project Name> placeholder</param>
+    /// <param name="description">Project description to replace <short description> placeholder</param>
+    /// <param name="phase">Project phase to replace <planning / prototype / ...> placeholder</param>
+    /// <param name="language">Primary language to replace <e.g., Swift, C#, TypeScript> placeholder</param>
+    /// <param name="framework">Primary framework to replace <e.g., SwiftUI, .NET, React> placeholder</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success message with file path or error</returns>
+    [McpServerTool(Name = "project_create_from_template")]
+    [Description("Creates a new project instruction file from the template with specified values")]
+    public async Task<string> CreateFromTemplateAsync(
+        [Description("The name for the new project file (e.g., 'my-project')")] string name,
+        [Description("Project name to replace <Project Name> placeholder")] string projectName,
+        [Description("Project description to replace <short description> placeholder")] string description,
+        [Description("Project phase to replace <planning / prototype / ...> placeholder")] string phase,
+        [Description("Primary language to replace <e.g., Swift, C#, TypeScript> placeholder")] string language,
+        [Description("Primary framework to replace <e.g., SwiftUI, .NET, React> placeholder")] string framework,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Load template
+            var template = await _templateService.GetProjectTemplateAsync(cancellationToken);
+            
+            // Build replacements dictionary
+            var replacements = new System.Collections.Generic.Dictionary<string, string>
+            {
+                { "<Project Name>", projectName },
+                { "<short description: what it does, who it's for>", description },
+                { "<short description>", description },
+                { "<planning / prototype / active development / maintenance / MVP / release>", phase },
+                { "<e.g., Swift, C#, TypeScript>", language },
+                { "<e.g., SwiftUI, .NET, React>", framework }
+            };
+            
+            // Create file from template
+            var filePath = await _projectService.CreateProjectFromTemplateAsync(name, template, replacements, cancellationToken);
+            
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                success = true,
+                message = $"Project '{name}' created successfully",
+                filePath
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new { error = $"Failed to create project: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// Validates a project instruction file
+    /// </summary>
+    /// <param name="filePath">The path to the project file to validate</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>JSON representation of the validation result with issues array</returns>
+    [McpServerTool(Name = "project_validate")]
+    [Description("Validates a project instruction file for required sections and proper formatting")]
+    public async Task<string> ValidateProjectAsync(
+        [Description("The path to the project instruction file to validate")] string filePath,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var validationResult = await _projectService.ValidateProjectAsync(filePath, cancellationToken);
+            
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                isValid = validationResult.IsValid,
+                errorCount = validationResult.ErrorCount,
+                warningCount = validationResult.WarningCount,
+                infoCount = validationResult.InfoCount,
+                issues = validationResult.Issues.ConvertAll(issue => new
+                {
+                    severity = issue.Severity.ToString(),
+                    section = issue.Section,
+                    message = issue.Message,
+                    lineNumber = issue.LineNumber
+                })
+            }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        }
+        catch (FileNotFoundException ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                error = $"File not found: {ex.Message}",
+                filePath
+            });
+        }
+        catch (Exception ex)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(new
+            {
+                error = $"Validation failed: {ex.Message}"
+            });
+        }
     }
 }

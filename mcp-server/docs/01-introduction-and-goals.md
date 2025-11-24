@@ -3,12 +3,14 @@
 ## 1.1 Requirements Overview
 
 **System Purpose:**
-The C# MCP Server Template is a Model Context Protocol server that exposes persona and project instruction files from the persona-template repository as MCP resources, enabling LLM providers to access structured development guidelines and project documentation.
+The C# MCP Server Template is a Model Context Protocol server that exposes persona and project instruction files from the persona-template repository as MCP tools and prompts, enabling LLM providers to access, manage, validate, and create structured development guidelines and project documentation.
 
 ### Essential Features
-- **Persona Instructions Exposure:** Serves current persona instruction files as `persona://current` MCP resource
-- **Project Instructions Exposure:** Serves current project instruction files as `project://current` MCP resource  
-- **Instruction Discovery:** Provides `list_available_instructions` tool to enumerate available persona and project files
+- **Instruction Discovery Tools:** `persona_list`, `project_list`, `template_list` tools to enumerate available instruction files
+- **Instruction Retrieval Tools:** `persona_get`, `project_get` tools to access specific instruction content with caching
+- **Instruction Creation Tools:** `persona_create_from_template`, `project_create_from_template` tools to generate new instructions from templates
+- **Instruction Validation Tools:** `persona_validate`, `project_validate` tools with validation error reporting
+- **Validation Prompts:** `validate_persona_prompt`, `validate_project_prompt` for LLM-based validation workflows
 - **File Caching:** Implements configurable TTL-based caching to minimize disk I/O operations
 - **Multi-Transport Support:** Supports HTTP/SSE (primary) and STDIO (fallback) transport protocols
 - **Provider Agnostic:** Works identically with Claude, OpenAI, GitHub Copilot, and other MCP clients

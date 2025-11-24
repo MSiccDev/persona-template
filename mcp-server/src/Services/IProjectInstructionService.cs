@@ -61,4 +61,28 @@ public interface IProjectInstructionService
     /// <param name="projectName">The name of the project to set as current</param>
     /// <param name="cancellationToken">Cancellation token for async operation</param>
     Task SetCurrentProjectAsync(string projectName, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Creates a new project instruction file from a template with token replacement
+    /// </summary>
+    /// <param name="name">The name of the project (alphanumeric, hyphens, underscores only)</param>
+    /// <param name="template">The template content to use</param>
+    /// <param name="replacements">Dictionary of tokens to replace (e.g., {{name}} -> value)</param>
+    /// <param name="cancellationToken">Cancellation token for async operation</param>
+    /// <returns>The full path to the created file</returns>
+    /// <exception cref="ArgumentException">Thrown when name format is invalid</exception>
+    /// <exception cref="InvalidOperationException">Thrown when file already exists</exception>
+    Task<string> CreateProjectFromTemplateAsync(
+        string name,
+        string template,
+        Dictionary<string, string> replacements,
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Validates a project instruction file for required sections and proper formatting
+    /// </summary>
+    /// <param name="filePath">The full path to the project instruction file to validate</param>
+    /// <param name="cancellationToken">Cancellation token for async operation</param>
+    /// <returns>ValidationResult containing IsValid flag and any issues found</returns>
+    Task<ValidationResult> ValidateProjectAsync(string filePath, CancellationToken cancellationToken = default);
 }

@@ -320,4 +320,147 @@ public class PersonaInstructionService : IPersonaInstructionService
 
         await Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public async Task<string> CreatePersonaFromTemplateAsync(
+        string name,
+        string template,
+        Dictionary<string, string> replacements,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate name format
+        ValidateInstructionName(name);
+
+        // Construct file path
+        var filePath = GetPersonaFilePath(name);
+
+        // Check if file already exists
+        if (File.Exists(filePath))
+        {
+            _logger.LogError("Persona file already exists: {FilePath}", filePath);
+            throw new InvalidOperationException($"Persona file '{name}_persona.instructions.md' already exists");
+        }
+
+        // Perform token replacement
+        var content = template;
+        foreach (var kvp in replacements)
+        {
+            // If key already contains brackets/angle brackets, use as-is
+            // Otherwise wrap in double curly braces for {{TOKEN}} format
+            var token = kvp.Key.StartsWith("[") || kvp.Key.StartsWith("<") || kvp.Key.StartsWith("{{")
+                ? kvp.Key
+                : $"{{{{{kvp.Key}}}}}";
+            content = content.Replace(token, kvp.Value, StringComparison.Ordinal);
+        }
+
+        // Write file
+        await File.WriteAllTextAsync(filePath, content, cancellationToken);
+        _logger.LogInformation("Created persona file: {FilePath}", filePath);
+
+        // Invalidate cache to ensure fresh load
+        InvalidateCache(name);
+
+        return filePath;
+    }
+
+    private static void ValidateInstructionName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or whitespace", nameof(name));
+        }
+
+        // Only allow alphanumeric, hyphens, and underscores
+        var namePattern = new Regex(@"^[a-zA-Z0-9_-]+$");
+        if (!namePattern.IsMatch(name))
+        {
+            throw new ArgumentException(
+                "Name must contain only alphanumeric characters, hyphens, and underscores",
+                nameof(name));
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<ValidationResult> ValidatePersonaAsync(string filePath, CancellationToken cancellationToken = default)
+    {
+        var result = new ValidationResult();
+
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                result.AddError("File", $"Persona instruction file not found at path: {filePath}");
+                return result;
+            }
+
+            var content = await File.ReadAllTextAsync(filePath, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                result.AddError("Content", "Persona instruction file is empty");
+                return result;
+            }
+
+            var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            
+            // Check for YAML frontmatter
+            if (lines.Length == 0 || !lines[0].StartsWith("---"))
+            {
+                result.AddWarning("Metadata", "Missing YAML frontmatter (---) at start of file");
+            }
+
+            // Check for required sections (heuristic: look for markdown headers)
+            var sectionHeaders = new[] { "# Metadata", "# Behavior", "# Traits", "# Constraints" };
+            var foundSections = new HashSet<string>();
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                foreach (var section in sectionHeaders)
+                {
+                    if (lines[i].StartsWith(section))
+                    {
+                        foundSections.Add(section);
+                    }
+                }
+            }
+
+            // Warn about missing recommended sections
+            if (!foundSections.Contains("# Metadata"))
+            {
+                result.AddWarning("Metadata", "Recommended section '# Metadata' not found");
+            }
+            if (!foundSections.Contains("# Behavior"))
+            {
+                result.AddWarning("Behavior", "Recommended section '# Behavior' not found");
+            }
+            if (!foundSections.Contains("# Traits"))
+            {
+                result.AddWarning("Traits", "Recommended section '# Traits' not found");
+            }
+            if (!foundSections.Contains("# Constraints"))
+            {
+                result.AddWarning("Constraints", "Recommended section '# Constraints' not found");
+            }
+
+            // Check for minimum content length
+            if (content.Length < 100)
+            {
+                result.AddWarning("Content", "Persona instruction content is quite short (< 100 characters)");
+            }
+
+            // Check for proper markdown formatting
+            var headerCount = lines.Count(l => l.StartsWith("#"));
+            if (headerCount < 2)
+            {
+                result.AddInfo("Format", "Consider adding section headers (# Header) for better structure");
+            }
+        }
+        catch (Exception ex)
+        {
+            result.AddError("Exception", $"Error validating persona: {ex.Message}");
+            _logger.LogError(ex, "Error validating persona at {FilePath}", filePath);
+        }
+
+        return result;
+    }
 }

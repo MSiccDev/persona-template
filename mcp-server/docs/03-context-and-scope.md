@@ -39,7 +39,7 @@ The C# MCP Server Template serves as a bridge between AI-powered development too
 
 | Interface | Partner | Description | Input to System | Output from System |
 |-----------|---------|-------------|-----------------|-------------------|
-| **IF-EXT-01** | AI/LLM Development Tools | MCP protocol communication for accessing development guidelines | MCP resource requests (`persona://current`, `project://current`), tool execution requests (`list_available_instructions`) | Instruction content (markdown), available file listings (JSON), error responses |
+| **IF-EXT-01** | AI/LLM Development Tools | MCP protocol communication for accessing development guidelines | MCP tool execution requests (persona_list, persona_get, persona_create_from_template, persona_validate, etc.), prompt requests (validate_persona_prompt, validate_project_prompt) | Instruction content (markdown), available file listings (JSON), validation results, error responses |
 | **IF-EXT-02** | Persona-Template Repository | File system access to instruction and guideline files | File modification notifications (implicit via TTL), directory structure changes | Instruction file content, file metadata, directory listings |
 | **IF-EXT-03** | Development Teams | Configuration and operational oversight | Configuration settings (appsettings.json, environment variables), deployment parameters | Server status logs, error notifications, performance metrics |
 
@@ -48,10 +48,10 @@ The C# MCP Server Template serves as a bridge between AI-powered development too
 #### IF-EXT-01: AI/LLM Development Tools Integration
 **Partners:** Claude Desktop, GitHub Copilot, OpenAI API clients, VS Code extensions, custom MCP implementations
 **Purpose:** Enable AI tools to access current development guidelines and project-specific instructions during code generation and review
-**Business Process:** AI tools query for relevant instructions before generating code, ensuring output adheres to team standards and architectural patterns
+**Business Process:** AI tools call MCP tools to discover, retrieve, create, and validate instruction files that guide code generation according to team standards
 **Data Exchanged:**
-- **Input:** Resource requests for current persona/project instructions, discovery requests for available instruction sets
-- **Output:** Current instruction content, lists of available instruction files with descriptions, contextual development guidelines
+- **Input:** Tool execution requests for instruction management (list, get, create, validate operations), prompt requests with content injection
+- **Output:** Current instruction content, lists of available instruction files with descriptions, validation results, contextual development guidelines
 
 #### IF-EXT-02: Persona-Template Repository Access
 **Partners:** Local file system, Git repository (persona-template)
