@@ -1,0 +1,14 @@
+services:
+  mcp-server:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PERSONA_PersonaServer__Host: 0.0.0.0
+      PERSONA_PersonaServer__Port: 3000
+      PERSONA_PersonaServer__Transport: SSE
+      PERSONA_PersonaServer__PersonaRepoPath: /data/persona-template
+    volumes:
+      - ../:/data/persona-template:ro
+    stdin_open: true
+    tty: true

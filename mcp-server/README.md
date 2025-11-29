@@ -45,6 +45,51 @@ dotnet run
 
 The server runs as a stdio-based MCP server, communicating via stdin/stdout according to the MCP protocol.
 
+## Containerized Deployment
+
+PersonaMcpServer ships with a multi-stage `Dockerfile` and `docker-compose.yml` so you can run the server inside a container with the same configuration as the source build.
+
+### Prerequisites
+
+- Docker Engine 23.0+ (Linux, macOS, or Windows with WSL2)
+- Docker Compose v2+ (bundled in Docker Desktop) for the `docker-compose.yml` workflow
+
+### Build the container image
+
+```bash
+cd mcp-server
+docker build -t persona-mcp-server .
+```
+
+### Run the container directly
+
+```bash
+docker run --rm -i -p 3000:3000 \
+  -v ${PWD}/..:/data/persona-template \
+  -e PERSONA_PersonaServer__Host=0.0.0.0 \
+  -e PERSONA_PersonaServer__Port=3000 \
+  -e PERSONA_PersonaServer__Transport=SSE \
+  -e PERSONA_PersonaServer__PersonaRepoPath=/data/persona-template \
+  persona-mcp-server
+```
+
+The image uses the `PERSONA_` prefix so the container can bind host-specific overrides for the `PersonaServer` section. Because the server expects STDIO to stay open, include `-i` (as shown above) whenever you run the container so it does not exit when stdin closes. It expects your persona/project repo to be mounted at `/data/persona-template`; the compose file already configures this path. Omitting `:ro` gives the container write access so the `*_create_from_template` tools can persist newly generated instruction files alongside your existing personas/projects.
+
+### Run with Docker Compose
+
+```bash
+cd mcp-server
+docker-compose up --build
+```
+
+The compose service exposes port 3000, injects the same `PERSONA_PersonaServer__*` overrides, mounts `../:/data/persona-template`, and sets `working_dir: /data` so the host repo `/data/persona-template` is discoverable by the server (needed so `TemplateService` can find `templates/`). It also keeps stdin/t tty open (`stdin_open: true`, `tty: true`) so the STDIO-based MCP transport stays up. Tail the container logs to confirm `PersonaMcpServer starting...` and that the server remained bound to port 3000 before connecting your MCP client.
+
+### Troubleshooting
+
+- **Port 3000 already in use**: stop other services or adjust `PERSONA_PersonaServer__Port` in the `docker run` command and update Compose accordingly.
+- **Persona repo not found**: ensure the host path (`${PWD}/..`) points to the repository root and that the volume mount is `:ro` (read-only) before launching the container.
+- **Environment variables ignored**: verify the variables use the `PERSONA_PersonaServer__` prefix (case-sensitive) so .NET binder maps them to `PersonaServer` section entries.
+- **Logs stop unexpectedly**: include `-e DOTNET_CLI_TELEMETRY_OPTOUT=1` or inspect `docker logs` output for validation errors from `ValidateOnStart()`.
 ---
 
 ## Configuration
@@ -146,7 +191,6 @@ PersonaMcpServer exposes 16 MCP tools across creation, retrieval, and validation
   "isValid": true,
   "errorCount": 0,
   "warningCount": 1,
-  "infoCount": 2,
   "issues": [
     {
       "severity": "Warning",
@@ -164,6 +208,16 @@ PersonaMcpServer exposes 16 MCP tools across creation, retrieval, and validation
 }
 ```
 
+## Validation Checklist
+
+- `dotnet run` from `mcp-server/src` should start the server and log `PersonaMcpServer starting...` without validation failures.
+- `dotnet test mcp-server.tests.csproj` (or `dotnet test` from `mcp-server`) to cover configuration, services, tools, and prompts.
+- `docker build -t persona-mcp-server mcp-server` builds the container successfully.
+- `docker run --rm -i -p 3000:3000 -v /Users/msicc/Git/persona:/data/persona-template:ro -e PERSONA_PersonaServer__Host=0.0.0.0 -e PERSONA_PersonaServer__PersonaRepoPath=/data/persona-template persona-mcp-server` starts the container, binds port 3000, and mounts the repo so `TemplateService` can enumerate `templates/`.
+- `docker-compose -f mcp-server/docker-compose.yml up --build` builds and starts the service with the repository mounted read-only at `/data/persona-template`, ensuring the container can access `templates/` for `template_list`.
+- If you need to exercise MCP resources/tools via HTTP, run the integration suite (`tests/Integration/`) or use your MCP client to invoke `persona://current`, `persona_list`, and the validation tools.
+
+---
 ---
 
 ## Complete MCP Prompts Reference

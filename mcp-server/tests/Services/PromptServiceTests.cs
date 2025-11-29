@@ -161,4 +161,23 @@ public class PromptServiceTests : IDisposable
         var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(
             async () => await _service.GetPersonaValidationPromptAsync(cts.Token));
     }
+
+    [Fact]
+    public async Task GetPersonaValidationPromptAsync_WhenPromptInsideRepo_UsesRepoPath()
+    {
+        // Arrange
+        var repoPrompts = Path.Combine(_mockConfig.Value.PersonaRepoPath, "prompts");
+        Directory.CreateDirectory(repoPrompts);
+        var promptPath = Path.Combine(repoPrompts, "validate-persona-instructions.prompt.md");
+        var promptContent = "repo prompt";
+        await File.WriteAllTextAsync(promptPath, promptContent);
+
+        var service = new PromptService(_mockConfig, _mockLogger);
+
+        // Act
+        var result = await service.GetPersonaValidationPromptAsync();
+
+        // Assert
+        result.Should().Be(promptContent);
+    }
 }

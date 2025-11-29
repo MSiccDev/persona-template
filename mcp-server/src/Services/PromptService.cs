@@ -22,7 +22,7 @@ public class PromptService : IPromptService
     {
         _config = config.Value;
         _logger = logger;
-        _promptsPath = Path.GetFullPath(Path.Combine(_config.PersonaRepoPath, "..", "prompts"));
+        _promptsPath = RepositoryResourceResolver.Resolve(_config.PersonaRepoPath, "prompts", _logger);
         _cache = new ConcurrentDictionary<string, string>();
     }
 
