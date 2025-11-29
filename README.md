@@ -169,6 +169,72 @@ This repository includes a **Model Context Protocol (MCP) server** implementatio
 
 **Learn more:** See [mcp-server/README.md](mcp-server/README.md) for installation, configuration, and usage examples.
 
+#### VS Code Global MCP Configuration
+
+You can make the MCP configuration available across every workspace by updating the **user-level** VS Code settings instead of relying solely on `.vscode/` files:
+
+1. Open `Preferences: Open Settings (JSON)` and add:
+    ```json
+    {
+       "github.copilot.chat.mcp.enabled": true
+    }
+    ```
+    This turns on MCP support globally for GitHub Copilot Chat.
+2. Create or update the user `mcp.json` (`~/Library/Application Support/Code/User/mcp.json` on macOS) with your container/host definition:
+    ```json
+    {
+       "servers": {
+          "persona-server": {
+             "command": "docker",
+             "args": [
+                "run",
+                "--rm",
+                "-i",
+                "-p",
+                "3000:3000",
+               "-v",
+               "/Users/msicc/Git/persona:/data/persona-template",
+                "-e",
+                "PERSONA_PersonaServer__Host=0.0.0.0",
+                "-e",
+                "PERSONA_PersonaServer__Port=3000",
+                "-e",
+                "PERSONA_PersonaServer__Transport=SSE",
+                "-e",
+                "PERSONA_PersonaServer__PersonaRepoPath=/data/persona-template",
+                "persona-mcp-server"
+             ],
+             "env": {
+                "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+             }
+          }
+       }
+    }
+    ```
+   Mounting your workspace root inside the container (as shown above) makes `/data/persona-template/templates` accessible so the MCP server’s `template_list` and other tools can read the instruction files.
+    VS Code uses this file for all workspaces unless a repository overrides it with its own `.vscode/mcp.json`.
+3. If you still want per-repo tweaks, keep a small `.vscode/mcp.json` in the repo; workspace-level files augment the global settings, so you only need to copy the template once per repo.
+
+#### Docker Container
+
+The MCP server can also run inside a container using the provided `mcp-server/Dockerfile` and `docker-compose.yml`. Build and run it alongside your persona/project files for reproducible MCP tooling.
+
+- **Build the image:** `cd mcp-server && docker build -t persona-mcp-server .`
+- **Run standalone:**
+   ```bash
+   docker run --rm -i -p 3000:3000 \
+      -v /Users/msicc/Git/persona:/data/persona-template \
+      -e PERSONA_PersonaServer__Host=0.0.0.0 \
+      -e PERSONA_PersonaServer__Port=3000 \
+      -e PERSONA_PersonaServer__Transport=SSE \
+      -e PERSONA_PersonaServer__PersonaRepoPath=/data/persona-template \
+      persona-mcp-server
+   ```
+   Mounting the workspace root into `/data/persona-template` (without `:ro`) gives the MCP server read/write access, so it can both list and persist persona/project instruction files via `template_list`, `create_from_template`, and validation tools. Keep your repo backed by version control so generated files can be committed centrally.
+- **Compose workflow:** `docker-compose -f mcp-server/docker-compose.yml up --build` (the compose file already keeps stdin open so the STDIO transport stays active)
+
+The container expects `PERSONA_PersonaServer` overrides so it can locate the read-only repo mounted at `/data/persona-template`. Because the server uses STDIO for MCP transport, keep stdin open (e.g., `-i`) so the process continues running rather than exiting once stdin is closed. Check the logs for `PersonaMcpServer starting...` and ensure port 3000 is bound before pointing your MCP client at the container.
+
 ---
 
 ## How It Works

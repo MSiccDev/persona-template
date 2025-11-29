@@ -22,7 +22,7 @@ public class TemplateService : ITemplateService
     {
         _config = config.Value;
         _logger = logger;
-        _templatesPath = Path.GetFullPath(Path.Combine(_config.PersonaRepoPath, "..", "templates"));
+        _templatesPath = RepositoryResourceResolver.Resolve(_config.PersonaRepoPath, "templates", _logger);
     }
 
     public async Task<string> GetPersonaTemplateAsync(CancellationToken cancellationToken = default)

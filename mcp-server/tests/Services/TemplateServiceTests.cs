@@ -124,6 +124,24 @@ public class TemplateServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ListAvailableTemplatesAsync_WhenTemplatesInsideRepoDirectory_UsesThatPath()
+    {
+        // Arrange
+        var repoTemplates = Path.Combine(_mockConfig.Value.PersonaRepoPath, "templates");
+        Directory.CreateDirectory(repoTemplates);
+        var templatePath = Path.Combine(repoTemplates, "persona_template.instructions.md");
+        await File.WriteAllTextAsync(templatePath, "repo template");
+
+        var service = new TemplateService(_mockConfig, _mockLogger);
+
+        // Act
+        var result = await service.ListAvailableTemplatesAsync();
+
+        // Assert
+        result.Should().Contain("persona_template.instructions");
+    }
+
+    [Fact]
     public async Task GetPersonaTemplateAsync_WithMissingFile_ShouldThrowFileNotFoundException()
     {
         // Act & Assert
